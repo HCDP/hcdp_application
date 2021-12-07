@@ -21,17 +21,13 @@ import Moment from 'moment';
 import { LeafletLayerControlExtensionComponent } from '../leaflet-controls/leaflet-layer-control-extension/leaflet-layer-control-extension.component';
 import { AssetManagerService } from 'src/app/services/util/asset-manager.service';
 
-//type workaround, c contains plugin controls, typed as any so won't give error due to type constraints not being in leaflet typedef
-let C: any = L.control;
-let CC: any = L.Control;
-let LExt: any = L;
-
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss']
 })
 export class MapComponent implements OnInit {
+  @Input() imageContainer: ElementRef;
 
   @ViewChild("mapElement") mapElement: ElementRef;
   @ViewChild("layerController") layerController: LeafletLayerControlExtensionComponent;
@@ -45,6 +41,8 @@ export class MapComponent implements OnInit {
     bounds: [ [14.050369038588524, -167.60742187500003], [26.522031143884014, -144.47021484375003] ]
   };
   //private R: any = L;
+
+  imageHiddenControls = ["leaflet-control-zoom", "leaflet-control-layers", "leaflet-control-export"];
 
   markerInfo: RainfallStationMarkerInfo;
 
@@ -201,18 +199,6 @@ export class MapComponent implements OnInit {
   }
 
   onMapReady(map: L.Map) {
-    //note A4Portrait and A4Landscape options for sizes don't seem to always load tiles outside view properly, so only allow current view for now
-    LExt.easyPrint({
-      title: "Export Map",
-      position: "topleft",
-      sizeModes: ["Current"],
-      exportOnly: true,
-      hideControlContainer: false,
-      filename: "HCDP_map",
-      hideClasses: ["leaflet-control-zoom", "leaflet-control-layers", "leaflet-control-easyPrint"]
-    }).addTo(map);
-
-
 
     this.active = {
       data: {
