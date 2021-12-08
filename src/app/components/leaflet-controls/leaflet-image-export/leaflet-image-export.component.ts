@@ -52,13 +52,19 @@ export class LeafletImageExportComponent implements OnInit {
     canvas.width = document.body.clientWidth;
     canvas.height = document.body.clientHeight;
     let ctx = canvas.getContext("2d");
-    ctx.rect(mapBounds.x, mapBounds.y, mapBounds.width, mapBounds.height);
-    ctx.clip();
     let defaultDisplays = new Map<HTMLElement, string>();
     rasterizeHTML.drawDocument(document, canvas).then(() => {
+      //copy to a new canvas cut to the right size
+      let croppedCanvas = document.createElement("canvas");
+      croppedCanvas.width = mapBounds.width;
+      croppedCanvas.height = mapBounds.height;
+      let croppedCtx = croppedCanvas.getContext("2d");
+      let imgData = ctx.getImageData(mapBounds.x, mapBounds.y, mapBounds.width, mapBounds.height);
+      croppedCtx.putImageData(imgData, 0, 0);
+
       let link = document.createElement("a");
       link.download = "HCDP_map.png";
-      link.href = canvas.toDataURL("image/png");
+      link.href = croppedCanvas.toDataURL("image/png");
       document.body.appendChild(link);
       link.click();
       //cleanup
@@ -115,14 +121,13 @@ export class LeafletImageExportComponent implements OnInit {
           let imageNode: HTMLImageElement = <HTMLImageElement>node;
 
           let sourceClone: HTMLImageElement = new Image;
+          sourceClone.crossOrigin = "";
           sourceClone.src = imageNode.src;
-          sourceClone.crossOrigin = "Anonymous";
   
           let canvasNode = document.createElement("canvas");
           let ctx = canvasNode.getContext("2d");
           canvasNode.width = imageNode.width;
           canvasNode.height = imageNode.height;
-          
           let imageEl = document.createElement("img");
   
           let imageDrawn = new Promise<void>((resolve) => {
