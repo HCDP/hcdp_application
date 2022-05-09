@@ -74,10 +74,9 @@ import { ErrorPopupComponent } from './dialogs/error-popup/error-popup.component
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import { InfoPopupComponent } from './dialogs/info-popup/info-popup.component';
 import { LeafletImageExportComponent } from './components/leaflet-controls/leaflet-image-export/leaflet-image-export.component';
-<<<<<<< HEAD
 
-=======
->>>>>>> cc538bcf6ab972c84e5810e184a2511b1ab69e6a
+import { DateGroupComponent } from './components/controls/date-group/date-group.component';
+
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -117,7 +116,8 @@ PlotlyModule.plotlyjs = PlotlyJS;
     LeafletLayerControlExtensionComponent,
     ErrorPopupComponent,
     InfoPopupComponent,
-    LeafletImageExportComponent
+    LeafletImageExportComponent,
+    DateGroupComponent
   ],
   imports: [
     MatProgressBarModule,

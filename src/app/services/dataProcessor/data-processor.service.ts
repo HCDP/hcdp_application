@@ -64,6 +64,7 @@ export class DataProcessorService {
                 values.set(j, value);
               }
             }
+            console.log(values);
 
             let rasterStat = geotiffData.addBand(band, values);
             if(rasterStat.code != UpdateFlags.OK) {
