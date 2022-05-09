@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { PropertyType, PropertyFilterOptions, StationFilteringService, StationMetadata } from 'src/app/services/filters/station-filtering.service';
+import { PropertyType, StationFilteringService, StationMetadata } from 'src/app/services/filters/station-filtering.service';
 import {CdkDragDrop, moveItemInArray, transferArrayItem, CdkDrag} from '@angular/cdk/drag-drop';
-import { MetadataStoreService, SKNRefMeta } from 'src/app/services/dataLoaders/dataRequestor/auxillary/siteManagement/metadata-store.service';
-// import { EventParamRegistrarService } from 'src/app/services/inputManager/event-param-registrar.service';
-// import { SiteInfo } from 'src/app/models/SiteMetadata';
 import * as L from "leaflet";
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { SiteInfo } from 'src/app/models/SiteMetadata';
+import {EventParamRegistrarService} from "../../services/inputManager/event-param-registrar.service";
 
 @Component({
   selector: 'app-station-property-filters',
@@ -14,6 +13,44 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./station-property-filters.component.scss']
 })
 export class StationPropertyFiltersComponent implements OnInit {
+
+  /////////////////////////////////
+
+  //how to apply filters
+  //map bounds (move to map component? maybe instead have everything emit filter function, has to pass all of them to get through)
+  //current stuff is way too complicated
+
+  //TEMP, remember to change types
+  stationsInMapBounds(bounds: L.LatLngBounds, stations: SiteInfo[]): SiteInfo[] {
+    let filtered = stations.filter((station: SiteInfo) => {
+      return bounds.contains(station);
+    });
+    return filtered;
+  }
+
+  framework() {
+    //note change mapbounds with filters emitter, replace temp stationsInMapBounds funct with emitted funct
+    this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.mapBounds, (bounds: L.LatLngBounds) => {
+      let filterHook = this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.filteredStations, (stations: any[]) => {
+        //remember to check for null always
+        if(stations) {
+          let filtered = this.stationsInMapBounds(bounds, stations);
+          //allow uninstall to go through so it doesn't get stuck (should work)
+          setTimeout(() => {
+            this.paramService.pushFilteredStations(filtered);
+          }, 0);
+        }
+      });
+      //only want to run against current set
+      filterHook.uninstall();
+    })
+  }
+
+
+  /////////////////////////////////
+
+
+
   groupCount = 0;
 
   stations: StationMetadata[];
@@ -40,8 +77,8 @@ export class StationPropertyFiltersComponent implements OnInit {
     e.stopPropagation();
   }
 
-
-  constructor(private filterService: StationFilteringService, private metaService: MetadataStoreService) {
+  //currently unused?
+  constructor(private filterService: StationFilteringService, private paramService: EventParamRegistrarService) {
     this.stations = [];
     this.availableProperties = new Set<string>();
 
@@ -50,42 +87,31 @@ export class StationPropertyFiltersComponent implements OnInit {
     let propertySet: Property[] = [];
 
     //note this is going to change
-    metaService.getMetaBySKNs(null).then((metadataRef: SKNRefMeta) => {
-      let properties = Object.keys(metadataRef[Object.keys(metadataRef)[0]].meta);
-      console.log(properties);
-      for(let skn in metadataRef) {
-        let metadata = metadataRef[skn];
-        let stationForm: StationMetadata = {
-          id: skn,
-          location: L.latLng(metadata.lat, metadata.lng, metadata.elevation),
-          name: metadata.name,
-          add: {}
-        }
-        //console.log(stationForm.location.alt);
-        for(let prop of properties) {
-          //wow this is sketch
-          if(!["lat", "lng", "skn", "name"].includes(prop)) {
-            stationForm.add[prop] = metadata[prop];
-          }
-        }
-        this.stations.push(stationForm);
-      }
+    // metaService.getMetaBySKNs(null).then((metadataRef: SKNRefMeta) => {
+    //   let properties = Object.keys(metadataRef[Object.keys(metadataRef)[0]].meta);
+    //   console.log(properties);
+    //   for(let skn in metadataRef) {
+    //     let metadata = metadataRef[skn];
+    //     let stationForm: StationMetadata = {
+    //       id: skn,
+    //       location: L.latLng(metadata.lat, metadata.lng, metadata.elevation),
+    //       name: metadata.name,
+    //       add: {}
+    //     }
+    //     //console.log(stationForm.location.alt);
+    //     for(let prop of properties) {
+    //       //wow this is sketch
+    //       if(!["lat", "lng", "skn", "name"].includes(prop)) {
+    //         stationForm.add[prop] = metadata[prop];
+    //       }
+    //     }
+    //     this.stations.push(stationForm);
+    //   }
 
-      // let propertySet: Property[] = [];
-      // for(let prop of this.propertyTypes.discreet) {
-      //   propertySet.push(new DiscreetPropertyData(prop, prop, ["test", "test2"]));
-      // }
-      // for(let prop of this.propertyTypes.range) {
-      //   propertySet.push(new RangePropertyData(prop, prop, [1, 2]));
-      // }
-      // this.propertyData = new PropertyData(propertySet);
-
-      console.log(this.stations);
-
-      filterService.setStations(this.stations);
+    //   filterService.setStations(this.stations);
 
 
-    });
+    // });
 
     for(let prop of this.propertyTypes.discreet) {
       propertySet.push(new DiscreetPropertyData(prop, prop, ["test", "test2"]));

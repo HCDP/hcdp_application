@@ -1,12 +1,10 @@
 import { Component, EventEmitter, OnInit, ViewChild, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import {MAT_DATE_FORMATS} from '@angular/material/core';
 import {DateFormatHelperService, DateUnit} from "../../../services/controlHelpers/date-format-helper.service";
-import {Platform} from '@angular/cdk/platform';
-import {FormControl, Validators, AbstractControl} from '@angular/forms';
-import {MatCalendarHeader, MatDatepicker, MatDatepickerInput, MatDatepickerModule} from "@angular/material/datepicker";
+import {FormControl} from '@angular/forms';
+import {MatCalendarHeader} from "@angular/material/datepicker";
 import Moment from "moment";
 import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
 
 export let dateFormatFactory = (formatHelper: DateFormatHelperService) => {
   return formatHelper.getDateFormat();
@@ -45,9 +43,7 @@ export class DateSelectorComponent implements OnInit, OnChanges {
   }
   @Output() dateChange: EventEmitter<Moment.Moment> = new EventEmitter<Moment.Moment>();
 
-  @Input() timestep: string;
-
-  @Input() initDate: Moment.Moment = null;
+  @Input() period: string;
 
   @Input() readonly: boolean = false;
 
@@ -68,14 +64,10 @@ export class DateSelectorComponent implements OnInit, OnChanges {
       }
     };
 
-    // this.paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.timestep, (timestep: string) => {
-    //   this.timeGranularity = timestep;
-    //   let unit: DateUnit = this.getUnit();
-    //   this.dateFormat.setDateMinUnit(unit);
-    // });
 
     //dateChange event doesn't trigger on form field when closed early, so use this to monitor changes
     //use map pipe to send null if invalid date
+    let dateChangeThrottle = null;
     this.dateControl.valueChanges.pipe(map((date: Moment.Moment) => {
       if(this.dateControl.valid) {
         return date;
@@ -85,15 +77,18 @@ export class DateSelectorComponent implements OnInit, OnChanges {
       }
     }));
     this.dateControl.valueChanges.subscribe((date: Moment.Moment) => {
-      this.dateChange.emit(date);
+      clearTimeout(dateChangeThrottle);
+      //debounce not working for all cases, just throttle so only update once per cycle
+      dateChangeThrottle = setTimeout(() => {
+        this.dateChange.emit(date);
+      }, 0);
     });
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    //if timestep changed, run filter update
-    if(changes.timestep) {
+    //if period changed, run filter update
+    if(changes.period) {
       this.setFormatUnit();
-      //trigger value change so formatting updates current input
       this.dateControl.setValue(this.dateControl.value);
     }
     //set value to edge of range if out of new bounds
@@ -110,26 +105,12 @@ export class DateSelectorComponent implements OnInit, OnChanges {
   }
 
   setFormatUnit() {
-    let unit: DateUnit = this.getUnit();
+    let unit: DateUnit = <DateUnit>this.period;
     this.dateFormat.setDateMinUnit(unit);
   }
 
-  getUnit(): DateUnit {
-    switch(this.timestep) {
-      case "day": {
-        return "day";
-      }
-      case "month": {
-        return "month";
-      }
-      default: {
-        return null;
-      }
-    }
-  }
-
   getDefaultView() {
-    switch(this.timestep) {
+    switch(this.period) {
       case "day": {
         return "month";
       }
@@ -143,28 +124,16 @@ export class DateSelectorComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
-    //set value to initial date input value
-    this.dateControl.setValue(this.initDate);
     this.setFormatUnit();
   }
 
   monthSelectHandler(event: Moment.Moment) {
-    if(this.timestep == "month") {
+    if(this.period == "month") {
       //event is a moment object for the selected date, set form control
       this.dateControl.setValue(event);
       this.datePicker.close();
     }
   }
-
-  // updateHandler(e) {
-  //   console.log(e);
-  // }
-
-  // dateInputValidator(control: AbstractControl) {
-  //   let df = /[0-9]{2}\/[0-9]{2}\/[0-9]{4}/;
-  //   return null;
-  //   //return forbidden ? {'forbiddenName': {value: control.value}} : null;
-  // }
 
 }
 

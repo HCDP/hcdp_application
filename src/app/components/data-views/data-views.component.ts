@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { Moment } from 'moment';
 import { SiteInfo } from 'src/app/models/SiteMetadata';
 import { EventParamRegistrarService } from 'src/app/services/inputManager/event-param-registrar.service';
 
@@ -11,11 +12,9 @@ import { EventParamRegistrarService } from 'src/app/services/inputManager/event-
 export class DataViewsComponent implements OnInit {
 
   loading = true;
-  stations: SiteInfo[];
-  selectedStation: SiteInfo;
-
-
-
+  stations: SiteInfo[] = null;
+  selectedStation: any;
+  unit: string;
 
   filterControl: FormControl = new FormControl([]);
   fieldControl: FormControl = new FormControl(null);
@@ -25,10 +24,10 @@ export class DataViewsComponent implements OnInit {
     observer: "Observer",
     network: "Network",
     island: "Island",
-    nceiID: "NCEI ID",
-    nwsID: "NWS ID",
-    scanID: "Scan ID",
-    smartNodeRfID: "Smart Node RFID"
+    ncei_id: "NCEI ID",
+    nws_id: "NWS ID",
+    scan_id: "Scan ID",
+    smart_node_rf_id: "Smart Node RFID"
   }
   islandNameMap = {
     BI: "Big Island",
@@ -45,19 +44,18 @@ export class DataViewsComponent implements OnInit {
     observer: new Set<string>(),
     network: new Set<string>(),
     island: new Set<string>(),
-    nceiID: new Set<string>(),
-    nwsID: new Set<string>(),
-    scanID: new Set<string>(),
-    smartNodeRfID: new Set<string>()
+    ncei_id: new Set<string>(),
+    nws_id: new Set<string>(),
+    scan_id: new Set<string>(),
+    smart_node_rf_id: new Set<string>()
   }
-  unfilteredStations: SiteInfo[];
+  unfilteredStations: SiteInfo[] = null;
   values: string[] = [];
 
 
   getFieldData(field: string) {
     let data = [];
     if(field) {
-      //console.log(this.field2Data[field]);
       data = Array.from(this.field2Data[field]);
       data = data.map((value: string) => {
         let label = value;
@@ -77,6 +75,20 @@ export class DataViewsComponent implements OnInit {
     this.fieldControl.setValue(null);
   }
 
+  filterStations() {
+    let values: string = this.filterControl.value;
+    let filteredStations = this.unfilteredStations;
+    let field = this.fieldControl.value;
+    if(values.length > 0 && field) {
+      filteredStations = this.unfilteredStations.filter((station: SiteInfo) => {
+        let value = station[field];
+        let inFilter = values.includes(value);
+        return inFilter;
+      });
+    }
+    this.paramService.pushFilteredStations(filteredStations);
+  }
+
   constructor(private paramService: EventParamRegistrarService) {
     for(let field in this.field2label) {
       let fieldData = {
@@ -91,59 +103,64 @@ export class DataViewsComponent implements OnInit {
       value: null
     });
 
-    let filterStations = () => {
-      let values: string = this.filterControl.value;
-      let filteredStations = this.unfilteredStations;
-      let field = this.fieldControl.value;
-      if(values.length > 0 && field) {
-        filteredStations = this.unfilteredStations.filter((station: SiteInfo) => {
-          let value = station[field];
-          let inFilter = values.includes(value);
-          return inFilter;
-        });
-      }
-      this.paramService.pushSiteFilter(filteredStations);
-    }
-
-    paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.sites, (stations: SiteInfo[]) => {
-      this.unfilteredStations = stations;
-      for(let field in this.field2Data) {
-        this.field2Data[field] = new Set<string>();
-        for(let station of stations) {
-          let value = station[field];
-          this.field2Data[field].add(value);
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.stations, (stations: SiteInfo[]) => {
+      if(stations) {
+        this.unfilteredStations = stations;
+        for(let field in this.field2Data) {
+          this.field2Data[field] = new Set<string>();
+          for(let station of stations) {
+            let value = station[field];
+            if(value) {
+              this.field2Data[field].add(value);
+            }
+          }
         }
+        this.filterStations();
       }
-      setTimeout(() => {
-        filterStations();
-      }, 0);
-      
+      else {
+        //propogate null to filtered stations if no station data available
+        this.paramService.pushFilteredStations(null);
+      }
     });
+
+
+
+
+
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.filteredStations, (stations: SiteInfo[]) => {
+      this.loading = false;
+      this.stations = stations;
+    });
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.selectedStation, (station: SiteInfo) => {
+      this.selectedStation = station;
+    });
+
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.dataset, (dataset: any) => {
+      if(dataset) {
+        //WHY ISNT THIS UPDATE BEING PROPOGATED???
+        //not a zoning issue tried that, plus all param service execs are run through a zone anyway
+        this.unit = dataset.unit;
+        this.clearFilter();
+      }
+    });
+
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.date, (date: Moment) => {
+      this.loading = true;
+    });
+  }
+
+  ngOnInit() {
     this.fieldControl.valueChanges.subscribe((value: string) => {
       this.filterControl.setValue([]);
       this.values = this.getFieldData(value);
     });
     this.filterControl.valueChanges.subscribe((values: string[]) => {
-      filterStations();
+      this.filterStations();
     });
-
-
-
-
-    paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.filteredSites, (stations: SiteInfo[]) => {
-      this.loading = false;
-      this.stations = stations
-    });
-    paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.selectedSite, (station: SiteInfo) => {
-      this.selectedStation = station;
-    });
-  }
-
-  ngOnInit() {
   }
 
   selectStation(station: SiteInfo) {
-    this.paramService.pushSiteSelect(station);
+    this.paramService.pushSelectedStation(station);
   }
 
 

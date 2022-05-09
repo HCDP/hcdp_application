@@ -1,11 +1,10 @@
-import { Component, OnInit, AfterContentInit, AfterViewInit, NgZone, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ChangeDetectionStrategy } from '@angular/core';
 import Moment from "moment";
-import "moment-timezone";
 import {EventParamRegistrarService} from "../../services/inputManager/event-param-registrar.service";
-import {Dataset, SetType, FillType, Timestep} from "../../models/Dataset";
 import { FormControl } from '@angular/forms';
-import {DateChangeInfo} from "../controls/date-focus/date-focus.component";
 import { VisDateSelectService } from 'src/app/services/controlHelpers/vis-date-select.service';
+import { DateManagerService } from 'src/app/services/dateManager/date-manager.service';
+import { Period } from 'src/app/models/types';
 
 @Component({
   selector: 'app-data-set-form',
@@ -14,29 +13,181 @@ import { VisDateSelectService } from 'src/app/services/controlHelpers/vis-date-s
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DataSetFormComponent implements OnInit, AfterViewInit {
+  datasets = {
+    rainfall: {
+      label: "Rainfall",
+      value: "rainfall",
+      description: "Rainfall data (1990 - present)"
+    },
+    legacy_rainfall: {
+      label: "Legacy Rainfall",
+      value: "legacy_rainfall",
+      description: "Legacy rainfall data based on older methods of production (1920 - 2012)"
+    },
+    tmax: {
+      label: "Maximum Temperature",
+      value: "tmax",
+      description: "Temperature data aggregated to its maximum value over the time period."
+    },
+    tmin: {
+      label: "Minimum Temperature",
+      value: "tmin",
+      description: "Temperature data aggregated to its minimum value over the time period."
+    },
+    tmean: {
+      label: "Mean Temperature",
+      value: "tmean",
+      description: "Temperature data aggregated to its mean value over the time period."
+    }
+  };
 
+  selectorDescriptions = {
+    dataset: "Select the type of data you would like to download. Hover over an option for a description of the data set.",
+    period: "The periodicity of data collection. For example, monthly data will be collected and aggregated for each month.",
+    dates: "The date range data for this dataset are available for (inclusive at both ends)",
+  }
 
-  // @Input() lower: Moment.Moment;
-  // @Input() upper: Moment.Moment;
-  // @Input() timestep: string;
-  // @Input() initDate: Moment.Moment;
-  // @Output() date
+  ranges: any;
 
+  periodAvailability = {
+    rainfall: ["day", "month"],
+    legacy_rainfall: ["month"],
+    tmin: ["day", "month"],
+    tmax: ["day", "month"],
+    tmean: ["day", "month"]
+  };
 
+  datasetDetails = {
+    rainfall: {
+      day: {
+        unit: "mm",
+        dataRange: [0, 20],
+        rangeAbsolute: [true, false],
+        stationData: true,
+        rasterData: false
+      },
+      month: {
+        unit: "mm",
+        dataRange: [0, 650],
+        rangeAbsolute: [true, false],
+        stationData: true,
+        rasterData: true
+      }
+    },
+    legacy_rainfall: {
+      month: {
+        unit: "mm",
+        dataRange: [0, 650],
+        rangeAbsolute: [true, false],
+        stationData: false,
+        rasterData: true
+      }
+    },
+    tmin: {
+      day: {
+        unit: "°C",
+        dataRange: [-10, 35],
+        rangeAbsolute: [false, false],
+        stationData: true,
+        rasterData: true
+      },
+      month: {
+        unit: "°C",
+        dataRange: [-10, 35],
+        rangeAbsolute: [false, false],
+        stationData: true,
+        rasterData: true
+      }
+    },
+    tmax: {
+      day: {
+        unit: "°C",
+        dataRange: [-10, 35],
+        rangeAbsolute: [false, false],
+        stationData: true,
+        rasterData: true
+      },
+      month: {
+        unit: "°C",
+        dataRange: [-10, 35],
+        rangeAbsolute: [false, false],
+        stationData: true,
+        rasterData: true
+      }
+    },
+    tmean: {
+      day: {
+        unit: "°C",
+        dataRange: [-10, 35],
+        rangeAbsolute: [false, false],
+        stationData: false,
+        rasterData: true
+      },
+      month: {
+        unit: "°C",
+        dataRange: [-10, 35],
+        rangeAbsolute: [false, false],
+        stationData: false,
+        rasterData: true
+      }
+    }
+  };
 
+  fillAvailability = {
+    rainfall: {
+      day: ["partial", "raw"],
+      month: ["partial"]
+    },
+    legacy_rainfall: {
+      month: []
+    },
+    tmin: {
+      day: ["raw"],
+      month: ["raw"]
+    },
+    tmax: {
+      day: ["raw"],
+      month: ["raw"]
+    },
+    tmean: {
+      day: ["raw"],
+      month: ["raw"]
+    }
+  };
 
-  private static readonly GLOBAL_MAX = Moment();
-  //set global min to january first year 0 (null/undefined works but seems to break change detection for some reason)
-  private static readonly GLOBAL_MIN = Moment("0000-01-01T00:00:00.000Z").tz("utc");
-  private static readonly DEFAULT_TIMESTEP = "day";
+  fills = {
+    label: "Data Fill",
+    values: {
+      partial: {
+        label: "Partial Filled",
+        value: "partial",
+        description: "This data has undergone QA/QC and is partially filled using statistical techniques to estimate some missing values."
+      },
+      raw: {
+        label: "Unfilled",
+        value: "raw",
+        description: "Station data including only values provided by stations before going through QA/QC."
+      }
+    },
+    description: "The type of processing the station data goes through."
+  };
 
-  // dataset: Dataset = {
-  //   startDate: null,
-  //   endDate: null,
-  //   timestep: null,
-  //   fill: null,
-  //   type: null
-  // };
+  periods = {
+    label: "Time Period",
+    values: {
+      day: {
+        label: "Daily",
+        value: "day",
+        description: "Data measured at a daily time scale."
+      },
+      month: {
+        label: "Monthly",
+        value: "month",
+        description: "Data measured at a monthly time scale."
+      }
+    },
+    description: "The time period each data point is measured over."
+  }
 
   valid: boolean;
   validParts: {
@@ -47,105 +198,94 @@ export class DataSetFormComponent implements OnInit, AfterViewInit {
     fill: boolean
   };
 
-  dataRange = {
-    min: DataSetFormComponent.GLOBAL_MIN,
-    max: DataSetFormComponent.GLOBAL_MAX
-  };
-  //how to deal with time zones? should it all be HST? local? UTC?
-  //this does affect what day it is, for now use utc, probably should change
-  //should probably store as UTC, provide as local
-  min: Moment.Moment;
-  max: Moment.Moment;
-  timestep: Timestep;
 
-  defaultLow: Moment.Moment = Moment("1990-12-01");
-  defaultHigh: Moment.Moment = Moment("2019-12-01");
-
-
-
-  //choices should come from external object
-  //date from indicator if NRT or updated if possible
-  dataset = {
-    datatype: {
-      label: "Rainfall",
-      value: "rainfall",
-      control: new FormControl("rainfall")
-    },
-    timestep: {
-      label: "Monthly",
-      value: "month",
-      control: new FormControl("month")
-    },
-    dateRange: {
-      low: {
-        label: null,
-        value: Moment("1990-12")
-      },
-      high: {
-        label: null,
-        value: Moment("2019-12")
-      }
-    },
-    advanced: {
-      control: new FormControl(false),
-      tier: {
-        label: "Tier 0",
-        value: 0,
-        control: new FormControl(0)
-      }
-    },
-    raster: null,
-    station: {
-      fill: {
-        label: "Partial Fill",
-        value: "partial",
-        control: new FormControl("partial")
-      }
-    }
+  controls = {
+    dataset: new FormControl("rainfall"),
+    period: new FormControl("month"),
+    fill: new FormControl("partial")
   }
 
-
-
-  constructor(private paramRegistrar: EventParamRegistrarService, private dateSelector: VisDateSelectService) {
-    //remember change format day/month
-    this.dataset.dateRange.low.label = this.dataset.dateRange.low.value.format("MMMM YYYY");
-    this.dataset.dateRange.high.label = this.dataset.dateRange.high.value.format("MMMM YYYY");
-
-    // this.min = this.dataRange.min;
-    // this.max = this.dataRange.max
-    // this.timestep = "month";
-    // this.validParts = {
-    //   min: false,
-    //   max: false,
-    //   timeGranularity: false,
-    //   setType: false,
-    //   fill: false
-    // };
-    // this.valid = false;
-    this.valid = true;
-
-    // this.updateDataSet();
+  constructor(private paramService: EventParamRegistrarService, private dateSelector: VisDateSelectService, private dateManager: DateManagerService) {
+    this.ranges = dateManager.getDatasetRanges();
+    this.controls.dataset.valueChanges.subscribe(() => {
+      this.setValidPeriod();
+      this.setValidFill();
+    });
+    this.controls.period.valueChanges.subscribe(() => {
+      this.setValidFill();
+    });
   }
 
   ngOnInit() {
   }
 
   ngAfterViewInit() {
-    this.updateDataSet();
+    this.updateDataset();
   }
 
-  
-
- 
-
-  updateDataSet() {
-    let dscp: Dataset = {
-      startDate: this.dataset.dateRange.low.value,
-      endDate: this.dataset.dateRange.high.value,
-      timestep: this.dataset.timestep.control.value,
-      fill: this.dataset.station.fill.control.value,
-      type: this.dataset.datatype.control.value
+  getFillData() {
+    let dataset = this.controls.dataset.value;
+    let period = this.controls.period.value;
+    let fills = this.fillAvailability[dataset][period];
+    let fillData = [];
+    for(let fill of fills) {
+      fillData.push(this.fills.values[fill]);
     }
-    this.paramRegistrar.pushDataset(dscp);
+    return fillData;
+  }
+
+  getDatasetData(): any[] {
+    return Object.values(this.datasets);
+  }
+
+  setValidPeriod() {
+    let dataset = this.controls.dataset.value;
+    let period = this.controls.period.value;
+    if(this.ranges[dataset][period] === undefined) {
+      let firstValidPeriod = this.periodAvailability[dataset][0];
+      this.controls.period.setValue(firstValidPeriod);
+    }
+  }
+
+  setValidFill() {
+    let dataset = this.controls.dataset.value;
+    let period = this.controls.period.value;
+    let fill = this.controls.fill.value;
+    let validFills: string[] = this.fillAvailability[dataset][period];
+    if(!validFills.includes(fill)) {
+      let firstValidFill = validFills[0];
+      this.controls.fill.setValue(firstValidFill);
+    }
+  }
+
+  getDateRangeLabel(): string {
+    let dataset = this.controls.dataset.value;
+    let period = this.controls.period.value;
+    let range = this.ranges[dataset][period];
+    let dateString = `${this.dateManager.dateToString(range[0], period, true)} - ${this.dateManager.dateToString(range[1], period, true)}`;
+    return dateString;
+  }
+
+  getDataStationsAvailable(): boolean {
+    let dataset = this.controls.dataset.value;
+    let period = this.controls.period.value;
+    return this.datasetDetails[dataset][period].stationData;
+  }
+
+  updateDataset() {
+    let dataset = this.controls.dataset.value;
+    let period = this.controls.period.value;
+    let details = this.datasetDetails[dataset][period];
+    let label =  `${this.periods.values[period].label} ${this.datasets[dataset].label}`;
+    let data = Object.assign({}, details);
+    data.label = label;
+    data.dataset = dataset;
+    data.period = period;
+    data.dateRange = this.ranges[dataset][period];
+    if(data.stationData) {
+      let fill = this.controls.fill.value;
+      data.fill = fill;
+    }
+    this.paramService.pushDataset(data);
   }
 }

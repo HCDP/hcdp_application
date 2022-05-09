@@ -1,5 +1,5 @@
 
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, NgZone } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ExportAddItemComponent } from 'src/app/dialogs/export-add-item/export-add-item.component';
@@ -29,9 +29,9 @@ export class ExportInterfaceComponent implements OnInit {
     maxSizeExceeded: boolean
   };
 
-  exportItems: ExportData[] = [];
+  exportItems: any[] = [];
 
-  constructor(public dialog: MatDialog, private exportManager: ExportManagerService, private errorService: ErrorPopupService, private dateService: DateManagerService) {
+  constructor(public dialog: MatDialog, private exportManager: ExportManagerService, private errorService: ErrorPopupService, private dateService: DateManagerService, private ngZone: NgZone) {
     this.emailData = {
       useEmailControl: new FormControl(false),
       emailInputControl: new FormControl(),
@@ -46,27 +46,18 @@ export class ExportInterfaceComponent implements OnInit {
     // });
   }
 
-  // checkExportSize() {
-  //   //size should be set to the export package size
-  //   let size = 0;
-  //   if(size < 100) {
-  //     this.emailData.maxSizeExceeded = false;
-  //   }
-  //   else {
-  //     this.emailData.maxSizeExceeded = true;
-  //     this.emailData.useEmailControl.setValue(true);
-  //   }
-  // }
-
   ngOnInit() {
-    //this.addExportData(-1);
   }
 
   checkEmailReq() {
-    let numFiles = this.exportItems.reduce((acc, item) => {
-      return acc + item.getNumFiles();
+    let numFiles: number = this.exportItems.reduce((acc: number, item: any) => {
+      let numDateFiles = item.data.range[1].diff(item.data.range[0], item.data.period) + 1;
+      let numExtentFiles: number = (<string[][]>Object.values(item.data.files)).reduce((acc: number, extents: string[]) => {
+        return acc + extents.length;
+      }, 0);
+      let numItemFiles = numDateFiles * numExtentFiles;
+      return acc + numItemFiles;
     }, 0);
-    console.log(numFiles);
     this.emailData.maxSizeExceeded = numFiles > 150;
     if(this.emailData.maxSizeExceeded) {
       this.emailData.useEmailControl.setValue(true);
@@ -81,7 +72,7 @@ export class ExportInterfaceComponent implements OnInit {
 
 
   addExportData(i: number) {
-    let initData: ExportData = i < 0 ? null : this.exportItems[i];
+    let initData: any = i < 0 ? null : this.exportItems[i].data;
 
     //panelClass applies global class to form (styles.scss)
     const dialogRef = this.dialog.open(ExportAddItemComponent, {
@@ -91,9 +82,7 @@ export class ExportInterfaceComponent implements OnInit {
       data: initData
     });
 
-    dialogRef.afterClosed().subscribe((data: ExportData) => {
-
-      console.log(data);
+    dialogRef.afterClosed().subscribe((data: any) => {
       if(data) {
         if(i < 0) {
           this.exportItems.push(data);
@@ -103,45 +92,92 @@ export class ExportInterfaceComponent implements OnInit {
         }
         this.checkEmailReq();
       }
-      
+
     });
   }
 
-  // getExportedItemDataset(i: number) {
-  //   let data = this.exportItems[i];
-  //   let format: string;
-  //   if(data.timeperiod.value == "month") {
-  //     format = "MMMM YYYY";
-  //   }
-  //   else {
-  //     format = "MMMM DD YYYY";
-  //   }
-  //   let dataset = `${data.timeperiod.label} ${data.datatype.label} ${data.dates[0].format(format)} - ${data.dates[1].format(format)}`;
-
-  //   return dataset;
-  // }
-
-  // getExportedItemFiles(i: number) {
-  //   let data = this.exportItems[i];
-  //   let files = [];
-  //   for(let fileInfo of data.files.raster) {
-  //     files.push(fileInfo.label);
-  //   }
-  //   for(let fileInfo of data.files.station) {
-  //     files.push(fileInfo.label);
-  //   }
-  //   return files.join(", ");
-  // }
+  dataset2Prop = {
+    rainfall: {
+      datatype: "rainfall",
+      production: "new"
+    },
+    legacy_rainfall: {
+      datatype: "rainfall",
+      production: "legacy"
+    },
+    tmin: {
+      datatype: "temperature",
+      aggregation: "min"
+    },
+    tmax: {
+      datatype: "temperature",
+      aggregation: "max"
+    },
+    tmean: {
+      datatype: "temperature",
+      aggregation: "mean"
+    }
+  }
+  file2Prop = {
+    data_map: {
+      files: ["data_map"]
+    },
+    se: {
+      files: ["se"]
+    },
+    anom: {
+      files: ["anom"]
+    },
+    anom_se: {
+      files: ["anom_se"]
+    },
+    metadata: {
+      files: ["metadata"]
+    },
+    station_data_partial: {
+      files: ["station_data"],
+      fill: "partial"
+    },
+    station_data_raw: {
+      files: ["station_data"],
+      fill: "raw"
+    }
+  }
 
   export() {
-    let reqs: ResourceReq[] = this.exportItems.reduce((acc: ResourceReq[], item: ExportData) => {
-      let sub = item.getResourceReqs();
+    let reqs: any[] = this.exportItems.reduce((acc: any[], item: any) => {
+      let sub = [];
+      //deconstruct data
+      const { dataset, files, period, range } = item.data;
+      //translate dates to strings
+      let start = this.dateService.dateToString(range[0], period);
+      let end = this.dateService.dateToString(range[1], period);
+      //expand dataset props
+      let datasetProps = this.dataset2Prop[dataset];
+      //expand file props and loop extents
+      for(let file in files) {
+        let fileProps = this.file2Prop[file];
+        let extents = files[file];
+        for(let extent of extents) {
+          let data = {
+            extent,
+            range: {
+              start,
+              end
+            },
+            period
+          };
+          //add dataset and file props
+          data = Object.assign(data, datasetProps, fileProps);
+          sub.push(data);
+        }
+      }
       return acc.concat(sub);
     }, []);
+    let email = this.emailData.emailInputControl.value
     if(this.emailData.useEmailControl.value) {
       this.exportActivityMonitor.mode = "indeterminate"
       this.exportActivityMonitor.active = true;
-      let email = this.emailData.emailInputControl.value
       this.exportManager.submitEmailPackageReq(reqs, email).then(() => {
         let message = `A download request has been generated. You should receive an email at ${email} with your download package shortly. If you do not receive an email within 4 hours, please ensure the email address you entered is spelled correctly and try again or contact the site administrators.`;
         this.errorService.notify("info", message);
@@ -155,25 +191,31 @@ export class ExportInterfaceComponent implements OnInit {
     else {
       this.exportActivityMonitor.mode = "query"
       this.exportActivityMonitor.active = true;
-      this.exportManager.submitInstantDownloadReq(reqs).then((progress: Observable<number>) => {
+      this.exportManager.submitInstantDownloadReq(reqs, email).then((progress: Observable<number>) => {
         this.exportActivityMonitor.mode = "determinate";
         this.exportActivityMonitor.value = 0;
         progress.subscribe((percent: number) => {
-          //console.log(percent);
-          this.exportActivityMonitor.value = percent;
+          //wrap everything in subscription in zone for change detection and to prevent bug where dialog won't close
+          this.ngZone.run(() => {
+            this.exportActivityMonitor.value = percent;
+          });
         }, (e: any) => {
-          this.errorService.notify("error", "An error occured while retreiving the download package.");
-          //does complete still trigger on error?
-          this.exportActivityMonitor.active = false;
+          this.ngZone.run(() => {
+            this.errorService.notify("error", "An error occured while retreiving the download package.");
+            this.exportActivityMonitor.active = false;
+          });
         }, () => {
-          //if this triggers on error need to set flag or something
-          let message = `Your download package has been generated. Check your browser for the downloaded file.`;
-          this.errorService.notify("info", message);
-          this.exportActivityMonitor.active = false;
+          this.ngZone.run(() => {
+            let message = `Your download package has been generated. Check your browser for the downloaded file.`;
+            this.errorService.notify("info", message);
+            this.exportActivityMonitor.active = false;
+          });
+
         });
 
       })
       .catch((e) => {
+        console.error(e);
         this.errorService.notify("error", "An error occured while generating the download package.");
         this.exportActivityMonitor.active = false;
       });

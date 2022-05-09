@@ -1,25 +1,26 @@
-import { Component, OnInit, ViewChild, ElementRef, OnChanges, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Input } from '@angular/core';
 import * as L from "leaflet";
 import "leaflet-spin";
 import * as chroma from "chroma-js";
-import {saveAs} from "file-saver";
-import * as geotiff from "geotiff";
-import { Color, ColorScale } from "../../models/colorScale";
+import { ColorScale } from "../../models/colorScale";
 import { ColorGeneratorService } from "../../services/rasterLayerGeneration/color-generator.service";
 import { DataRetreiverService } from "../../services/util/data-retreiver.service";
 import { R, RasterOptions, LeafletRasterLayerService } from "../../services/rasterLayerGeneration/leaflet-raster-layer.service";
-import { EventParamRegistrarService, ParameterHook } from "../../services/inputManager/event-param-registrar.service"
+import { EventParamRegistrarService, LoadingData, ParameterHook } from "../../services/inputManager/event-param-registrar.service"
 import "leaflet-groupedlayercontrol";
-import { BandData, IndexedValues, RasterHeader, RasterData } from 'src/app/models/RasterData.js';
-import { SiteMetadata, SiteInfo } from 'src/app/models/SiteMetadata.js';
+import { RasterData, RasterHeader } from 'src/app/models/RasterData.js';
+import { SiteInfo } from 'src/app/models/SiteMetadata.js';
 import "leaflet.markercluster";
-import "leaflet-easyprint";
-import {first, min} from "rxjs/operators";
 import {DataManagerService} from "../../services/dataManager/data-manager.service";
 import { RoseControlOptions } from '../leaflet-controls/leaflet-compass-rose/leaflet-compass-rose.component';
 import Moment from 'moment';
 import { LeafletLayerControlExtensionComponent } from '../leaflet-controls/leaflet-layer-control-extension/leaflet-layer-control-extension.component';
+// import { LeafletImageExportComponent } from "../leaflet-controls/leaflet-image-export/leaflet-image-export.component";
 import { AssetManagerService } from 'src/app/services/util/asset-manager.service';
+<<<<<<< HEAD
+=======
+import { DateManagerService } from 'src/app/services/dateManager/date-manager.service';
+>>>>>>> cc538bcf6ab972c84e5810e184a2511b1ab69e6a
 
 @Component({
   selector: 'app-map',
@@ -27,6 +28,8 @@ import { AssetManagerService } from 'src/app/services/util/asset-manager.service
   styleUrls: ['./map.component.scss']
 })
 export class MapComponent implements OnInit {
+  @Input() imageContainer: ElementRef;
+
   @Input() imageContainer: ElementRef;
 
   @ViewChild("mapElement") mapElement: ElementRef;
@@ -61,13 +64,14 @@ export class MapComponent implements OnInit {
     [band: string]: any
   };
 
-  private layerLabelMap: TwoWayLabelMap;
 
   private selectedMarker: L.CircleMarker;
 
+  dataset: any = {};
+  colorScaleLabel: string = "";
 
 
-  constructor(private dataManager: DataManagerService, private paramService: EventParamRegistrarService, private dataRetreiver: DataRetreiverService, private colors: ColorGeneratorService, private rasterLayerService: LeafletRasterLayerService, private assetService: AssetManagerService) {
+  constructor(private dataManager: DataManagerService, private paramService: EventParamRegistrarService, private dataRetreiver: DataRetreiverService, private colors: ColorGeneratorService, private rasterLayerService: LeafletRasterLayerService, private assetService: AssetManagerService, private dateManager: DateManagerService) {
     let roseImage = "/arrows/nautical.svg";
     let roseURL = assetService.getAssetURL(roseImage);
     this.roseOptions = {
@@ -75,29 +79,34 @@ export class MapComponent implements OnInit {
       position: "bottomleft"
     }
 
-
-    dataManager.setMap(this);
     this.baseLayers = {
-      Satellite: L.tileLayer("http://www.google.com/maps/vt?lyrs=y@189&gl=en&x={x}&y={y}&z={z}"),
-      Street: L.tileLayer('https://www.google.com/maps/vt?lyrs=m@221097413,traffic&x={x}&y={y}&z={z}')
+      "Satellite (Google)": L.tileLayer("http://www.google.com/maps/vt?lyrs=y@189&gl=en&x={x}&y={y}&z={z}", {
+        maxZoom: 20
+      }),
+      "Street (Google)": L.tileLayer('https://www.google.com/maps/vt?lyrs=m@221097413,traffic&x={x}&y={y}&z={z}', {
+        maxZoom: 20
+      }),
+      "World Imagery (ESRI)": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+      }),
+      "USGS Topo (USGS)": L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 16,
+        attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
+      }),
+      "Shaded Relief (ESRI)": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 13,
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri'
+      })
     };
     this.dataLayers = {};
-    this.layerLabelMap = new TwoWayLabelMap({
-      "rainfall": "Rainfall",
-      "anomaly": "Anomaly",
-      "se_rainfall": "Rainfall Standard Error",
-      "se_anomaly": "Anomaly Standard Error"
-    });
 
     this.options = {
-      layers: this.baseLayers.Satellite,
+      layers: this.baseLayers["Satellite (Google)"],
       zoom: 7,
       center: L.latLng(20.559, -157.242),
       attributionControl: false,
-      // zoomSnap: 0.01,
-      // wheelPxPerZoomLevel: 200,
       minZoom: 6,
-      maxZoom: 18,
       maxBounds: this.extents.bounds
     };
 
@@ -108,27 +117,30 @@ export class MapComponent implements OnInit {
       iconUrl: require('leaflet/dist/images/marker-icon.png'),
       shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
     });
+
+
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.loading, (data: LoadingData) => {
+      if(data && data.tag == "vis") {
+        this.setLoad(data.loading);
+      }
+    });
   }
 
 
   invalidateSize() {
-    this.map.invalidateSize();
+    if(this.map) {
+      this.map.invalidateSize();
+    }
   }
 
   focusedBoundary = null
   focusSpatialExtent(extent: string) {
-    // if(this.markerClusterLayer) {
-    //   this.map.removeLayer(this.markerClusterLayer);
-    // }
     this.clearExtent();
     let bounds: L.LatLngBoundsExpression = this.extents[extent];
     this.map.flyToBounds(bounds);
     let boundary = L.rectangle(bounds, {weight: 2, fillOpacity: 0});
     boundary.addTo(this.map);
     this.focusedBoundary = boundary;
-    // if(this.markerClusterLayer) {
-    //   this.map.addLayer(this.markerClusterLayer);
-    // }
   }
 
   clearExtent() {
@@ -160,14 +172,9 @@ export class MapComponent implements OnInit {
   colorSchemeType: string;
   setColorScheme(colorScheme: ColorScale) {
     let layer: any = this.dataLayers[this.active.band];
+    this.colorScheme = colorScheme;
     if(layer) {
-
-      // //set the selected scheme type for validation on cb
-      // this.colorSchemeType = scheme;
-
-
       layer.setColorScale(colorScheme);
-      this.colorScheme = colorScheme;
       //update marker colors
       for(let marker of this.markerInfo.markers) {
         let color = colorScheme.getColor(marker.metadata.value);
@@ -199,126 +206,155 @@ export class MapComponent implements OnInit {
   }
 
   onMapReady(map: L.Map) {
+<<<<<<< HEAD
+=======
+    this.map = map;
+>>>>>>> cc538bcf6ab972c84e5810e184a2511b1ab69e6a
 
     this.active = {
       data: {
-        sites: null,
+        stations: null,
         raster: null,
         date: null
       },
-      band: "rainfall",
+      band: "0",
     };
 
-
-
+    this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.date, (date: Moment.Moment) => {
+      if(date) {
+        date = date.clone();
+      }
+      this.active.data.date = date;
+    });
 
     this.initMarkerInfo();
 
-    // setInterval(() => {
-    //   map.invalidateSize();
-    // }, 1000);
-
-    L.DomUtil.addClass(map.getContainer(), 'pointer-cursor')
+    L.DomUtil.addClass(this.map.getContainer(), 'pointer-cursor')
     L.control.scale({
       position: 'bottomleft',
       maxWidth: 200
-    }).addTo(map);
-
-
-
-    this.map = map;
+    }).addTo(this.map);
 
     //!!
     //arrow functions lexically bind this (bind to original context)
     //have to use "function()" syntax if new context
 
 
-    let colorScale: ColorScale = this.colors.getDefaultMonochromaticRainfallColorScale();
-    //let colorScale: ColorScale = this.colors.getDefaultRainbowRainfallColorScale();
+    let colorScale: ColorScale;
     this.colorScheme = colorScale;
 
-
-
-
-
-
-    // let layerGroups = {
-    //   Types: {}
-    // };
-
-    // let clusterOptions = {
-    //   //chunkedLoading: true
-    // };
-    //provides minimum radius at a specific scale
-    let pivotZoom = 10;
-    let minRadiusInfo = [5, 10];
     this.map.on("zoomend", () => {
-
+      let bounds: L.LatLngBounds = this.map.getBounds();
+      this.paramService.pushMapBounds(bounds);
       this.updateMarkers();
     });
 
-
-
-
-    //want filtered, should anything be done with the unfiltered sites? gray them out or just exclude them? can always change
-    let siteHook: ParameterHook = this.paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.filteredSites, (sites: SiteInfo[]) => {
-      this.active.data.sites = sites;
-
-      this.constructMarkerLayerPopulateMarkerData(sites);
+    this.map.on("moveend", () => {
+      let bounds: L.LatLngBounds = this.map.getBounds();
+      this.paramService.pushMapBounds(bounds);
     });
 
-    // let lc = C.layers(this.baseLayers);
-    // lc.addTo(map);
-    this.layerController.addLayers(this.baseLayers);
-
-    let rasterHook = this.paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.raster, (raster: RasterData) => {
-
-      this.active.data.raster = raster;
-      let bands = raster.getBands();
-      let header = raster.getHeader();
-      for(let band in bands) {
-        let rasterOptions: RasterOptions = {
-          cacheEmpty: true,
-          colorScale: colorScale,
-          data: {
-            header: header,
-            values: bands[band]
-          }
-        };
-        let rasterLayer = R.gridLayer.RasterLayer(rasterOptions);
-        //layerGroups.Types[this.layerLabelMap.getLabel(band)] = rasterLayer;
-        this.dataLayers[band] = rasterLayer;
-        rasterLayer.setOpacity(this.opacity);
-      }
-      //add rainfall layer to map as default
-      map.addLayer(this.dataLayers["rainfall"]);
-
-      //for now at least only one layer, make sure to replace if multiple
-      this.layerController.addOverlay(this.dataLayers["rainfall"], "Rainfall Map");
-
-      //install hover handler (requires raster to be set to work)
-      let hoverTag = this.paramService.registerMapHover(map);
-      let hoverHook = this.paramService.createParameterHook(hoverTag, this.hoverPopupHandler(1000));
-
-      //uninstall current hook and replace with update hook that updates raster
-      rasterHook.uninstall();
-      rasterHook = this.paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.raster, (raster: RasterData) => {
-        this.active.data.raster = raster;
-        bands = raster.getBands();
-        //set layer data
-        for(let band in bands) {
-          let values = bands[band];
-          this.dataLayers[band].setData(values);
+    //set timeout to prevent issues with map not propogating to overlay extension
+    setTimeout(() => {
+      //want filtered, should anything be done with the unfiltered stations? gray them out or just exclude them? can always change
+      this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.filteredStations, (stations: SiteInfo[]) => {
+        if(stations) {
+          this.active.data.stations = stations;
+          this.constructMarkerLayerPopulateMarkerData(stations);
+        }
+        //no station data available
+        else {
+          this.active.data.stations = [];
+          this.constructMarkerLayerPopulateMarkerData([]);
         }
       });
+    }, 0);
 
+
+
+    this.layerController.addLayers(this.baseLayers);
+
+    let datasetHook = this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.dataset, (dataset: any) => {
+      if(dataset) {
+        this.dataset = dataset;
+        this.colorScaleLabel = `${dataset.label} (${dataset.unit})`
+      }
     });
 
-    let selectedSiteHook = this.paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.selectedSite, (station: SiteInfo) => {
-      if(station) {
-        let marker: L.CircleMarker = this.markerInfo.markerMap.get(station);
+    let rasterHook = this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.raster, (raster: RasterData) => {
+      if(raster) {
+        this.active.data.raster = raster;
+        let bands = raster.getBands();
+        let header = raster.getHeader();
+        for(let band in bands) {
+          let rasterOptions: RasterOptions = {
+            cacheEmpty: true,
+            colorScale: this.colorScheme,
+            data: {
+              header: header,
+              values: bands[band]
+            }
+          };
+          let rasterLayer = R.gridLayer.RasterLayer(rasterOptions);
+          //layerGroups.Types[this.layerLabelMap.getLabel(band)] = rasterLayer;
+          this.dataLayers[band] = rasterLayer;
+          rasterLayer.setOpacity(this.opacity);
+        }
+        //add rainfall layer to map as default
+        this.map.addLayer(this.dataLayers["0"]);
 
-        //siteMarkers.zoomToShowLayer(marker, () => {
+        //for now at least only one layer, make sure to replace if multiple
+        this.layerController.addOverlay(this.dataLayers["0"], "Data Map");
+
+        //install hover handler (requires raster to be set to work)
+        let hoverTag = this.paramService.registerMapHover(this.map);
+        this.paramService.createParameterHook(hoverTag, this.hoverPopupHandler(1000));
+
+        //uninstall current hook and replace with update hook that updates raster
+        rasterHook.uninstall();
+        rasterHook = this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.raster, (raster: RasterData) => {
+          //no raster for dataset, produce an empty raster
+          if(raster === null) {
+            //note should change this to grab the header from the emitter, not used for now
+            raster = new RasterData(this.active.data.raster.getHeader());
+            raster.addBand("0", new Map<number, number>());
+            this.active.data.raster = raster;
+          }
+          this.active.data.raster = raster;
+          bands = raster.getBands();
+          //set layer data
+          for(let band in bands) {
+            let values = bands[band];
+            this.dataLayers[band].setData(values);
+          }
+        });
+      }
+    });
+
+
+    this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.selectedStation, (station: any) => {
+      this.selectStation(station);
+    });
+
+    this.map.on("layeradd", (addData: any) => {
+      let layer = addData.layer;
+      if(layer.options && layer.options.maxZoom) {
+        this.map.setMaxZoom(layer.options.maxZoom);
+      }
+    });
+
+    this.invalidateSize()
+  }
+
+
+  selectedStation = null;
+  selectStation(station: SiteInfo) {
+    this.selectedStation = station;
+    if(station) {
+      let marker: L.CircleMarker = this.markerInfo.markerMap.get(station);
+      //ignore if station doesn't exist
+      if(marker) {
+        //stationMarkers.zoomToShowLayer(marker, () => {
         if(this.selectedMarker !== undefined && this.selectedMarker.isPopupOpen()) {
           this.selectedMarker.closePopup();
         }
@@ -334,46 +370,14 @@ export class MapComponent implements OnInit {
         }, 300);
         //use as callback to animation end, otherwise movement bugs the popup and it immediately closes
         //think something about it already moving interferes with the popup repositioning
-        map.once("moveend", () => {
+        this.map.once("moveend", () => {
           if(marker.isPopupOpen && this.selectedMarker === marker) {
             marker.openPopup();
           }
 
-        })
+        });
       }
-
-      //});
-
-
-    });
-
-    let dateHook = this.paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.date, (date: Moment.Moment) => {
-      this.active.data.date = date;
-    });
-
-
-
-
-
-
-    this.setBaseLayerHandlers();
-
-    map.on("baselayerchange", () => {
-
-    });
-
-  }
-
-
-
-  setBaseLayerHandlers() {
-    //can use this if using multiple bands in the future, for now only one so don't worry about changing it (should always be 'rainfall')
-    //note that is using this you need to make the band overlays exclusive and ignore the rainfall station overlay
-    // this.map.on('overlayadd', (e: L.LayersControlEvent) => {
-    //   //set layer to type any
-    //   //let layer: any = e.layer;
-    //   this.active.band = e.name.toLowerCase();
-    // });
+    }
   }
 
 
@@ -404,8 +408,6 @@ export class MapComponent implements OnInit {
 
         let header = this.active.data.raster.getHeader();
         let data = this.active.data.raster.getBands()[this.active.band];
-        // console.log(this.active);
-        // console.log(data);
 
         let geojson = this.dataRetreiver.getGeoJSONCellFromGeoPos(header, data, position);
         //check if data exists at hovered point
@@ -422,10 +424,12 @@ export class MapComponent implements OnInit {
 
           let value = this.dataRetreiver.geoPosToGridValue(header, data, position);
 
+          let labels = this.getValueLabels(value);
+
           //popup cell value
           popupData.popup = L.popup({ autoPan: false })
           .setLatLng(position);
-          let content = `${Math.round(value * 100) / 100}mm<br>${Math.round((value / 25.4) * 100) / 100}in<br>`;
+          let content = `${labels.value}<br>${labels.transValue}<br>`;
           popupData.popup.setContent(content);
           popupData.popup.openOn(this.map);
         }
@@ -434,13 +438,6 @@ export class MapComponent implements OnInit {
 
   }
 
-  // setDrawingHandlers() {
-  //   this.map.on(L.Draw.Event.CREATED, (e: any) => {
-  //     let geojson = e.layer.toGeoJSON();
-  //     console.log(geojson);
-  //     //console.log(this.dataRetreiver.getGeoJSONBoundingBox(geojson));
-  //   });
-  // }
 
   ngOnInit() {
 
@@ -449,7 +446,7 @@ export class MapComponent implements OnInit {
   getHeaderDate(): string {
     let formattedDate = "";
     if(this.active.data.date) {
-      formattedDate = this.active.data.date.format("MMMM YYYY");
+      formattedDate = this.dateManager.dateToString(this.active.data.date, this.dataset.period, true);
     }
     return formattedDate;
   }
@@ -466,46 +463,44 @@ export class MapComponent implements OnInit {
     }
   }
 
-  constructMarkerLayerPopulateMarkerData(sites: SiteInfo[]): void {
+  //why is this called three times at init?
+  constructMarkerLayerPopulateMarkerData(stations: SiteInfo[]): void {
     let markers: RainfallStationMarker[] = [];
     this.markerInfo.markerMap.clear();
 
     let markerLayer = L.layerGroup();
     let minRadiusAtPivot = Number.POSITIVE_INFINITY;
-    sites.forEach((site: SiteInfo) => {
-      // //troubleshooting markers not appearing
-      // if(site.location.lat < this.options.maxBounds[0][0] || site.location.lat > this.options.maxBounds[1][0]
-      // || site.location.lng < this.options.maxBounds[0][1] || site.location.lng > this.options.maxBounds[1][1]) {
-      //   console.log("OOB!", site.location.lat, site.location.lng);
-      // }
-      //let polyMarker = L.circle([site.location.lat, site.location.lng], {radius: (site.value + 1) * 1000});
-      //polyMarkerLayer.addLayer(polyMarker);
-      let radius = this.getMarkerRadiusAtPivot(site);
+    stations.forEach((station: SiteInfo) => {
+      let radius = this.getMarkerRadiusAtPivot(station);
       if(radius < minRadiusAtPivot) {
         minRadiusAtPivot = radius;
       }
-      let fill = this.colorScheme.getColor(site.value);
-      let hexFill = chroma([fill.r, fill.g, fill.b]).hex();
-      let marker = L.circleMarker(site.location, {
+      let hexFill = "#ffffff";
+      if(this.colorScheme) {
+        let fill = this.colorScheme.getColor(station.value);
+        hexFill = chroma([fill.r, fill.g, fill.b]).hex();
+      }
+
+      let marker = L.circleMarker(station.location, {
         opacity: 1,
         fillOpacity: 1,
         color: "black",
         fillColor: hexFill
       });
 
-      let siteDetails = this.getMarkerPopupText(site);
-      marker.bindPopup(siteDetails, { autoPan: false, autoClose: false});
+      let stationDetails = this.getMarkerPopupText(station);
+      marker.bindPopup(stationDetails, { autoPan: false, autoClose: false});
       marker.on("click", () => {
-        this.paramService.pushSiteSelect(site);
+        this.paramService.pushSelectedStation(station);
       });
-      this.markerInfo.markerMap.set(site, marker);
-      //console.log(siteDetails);
+      this.markerInfo.markerMap.set(station, marker);
+      //console.log(stationDetails);
       markerLayer.addLayer(marker);
       let stationMarker: RainfallStationMarker = {
         marker: marker,
         metadata: {
           pivotRadius: radius,
-          value: site.value
+          value: station.value
         }
       }
       markers.push(stationMarker);
@@ -518,26 +513,62 @@ export class MapComponent implements OnInit {
     this.updateMarkers();
 
     if(this.markerInfo.layer) {
-      //siteMarkers.removeLayers(this.markers);
       this.map.removeLayer(this.markerInfo.layer);
       this.layerController.removeLayer(this.markerInfo.layer);
     }
     this.markerInfo.layer = markerLayer;
-
-    //console.log(markers);
-    //siteMarkers.addLayers(markers);
-    //console.log(siteMarkers);
-    this.layerController.addOverlay(markerLayer, "Rainfall Stations");
+    this.layerController.addOverlay(markerLayer, "Data Stations");
     this.map.addLayer(markerLayer);
   }
 
-  getMarkerPopupText(site: SiteInfo): string {
-    let siteDetails: string = "Name: " + site.name
-    + "<br> SKN: " + site.skn
-    + "<br> Lat: " + site.lat + ", Lng: " + site.lng
-    + `<br> Value: ${Math.round(site.value * 100) / 100}mm`
-    + `, ${Math.round((site.value / 25.4) * 100) / 100}in`;
-    return siteDetails;
+  getMarkerPopupText(station: any): string {
+    let labels = this.getCoordAndValueLabels(station);
+    let stationDetails: string = "Name: " + station.name
+    + "<br> Station ID: " + station[station.id_field]
+    + "<br> Lat: " + labels.lat + ", Lon: " + labels.lng
+    + `<br> Value: ${labels.value}`
+    + `, ${labels.transValue}`;
+    return stationDetails;
+  }
+
+  getCoordAndValueLabels(station) {
+    let lat = Math.round(station.lat * 100) / 100;
+    let lng = Math.round(station.lng * 100) / 100;
+    let valueLabels = this.getValueLabels(station.value);
+    return {
+      lat,
+      lng,
+      ...valueLabels
+    };
+  }
+
+  getValueLabels(value) {
+     //TEMP translations
+     let translations = {
+      mm: {
+        f: (value: number) => {
+          return value / 25.4;
+        },
+        translationUnit: "in"
+      },
+      "°C": {
+        f: (value: number) => {
+          return (value * (9 / 5)) + 32;
+        },
+        translationUnit: "°F"
+      }
+    };
+
+    let unit = this.dataset.unit;
+    let translationData = translations[unit];
+    let translationValue = translationData.f(value);
+    let translationUnit = translationData.translationUnit;
+    let roundedValue = Math.round(value * 100) / 100;
+    let roundedTranslationValue = Math.round(translationValue * 100) / 100;
+    return {
+      value: `${roundedValue}${unit}`,
+      transValue: `${roundedTranslationValue}${translationUnit}`
+    };
   }
 
   updateMarkers(): void {
@@ -571,22 +602,20 @@ export class MapComponent implements OnInit {
     return weight;
   }
 
-  getMarkerRadiusAtPivot(site: SiteInfo): number {
+  getMarkerRadiusAtPivot(station: SiteInfo): number {
     let min = 5;
     let max = 30;
-    let radius = min + site.value / 50;
-    //radius = Math.max(radius, min);
+    let dataRange: [number, number] = this.dataset.dataRange;
+    let value = station.value;
+    let valueOffset = Math.max(value - dataRange[0], 0);
+    let span = dataRange[1] - dataRange[0];
+    let coef = 13 / span;
+    let radius = min + coef * valueOffset;
     radius = Math.min(radius, max);
     return radius;
-    // if(site.value > 1) {
-    //   radius += Math.log(site.value) / Math.log(1.5);
-    // }
-
   }
 
   setStaticMarkerRadius(marker: RainfallStationMarker) {
-    let zoom = this.map.getZoom();
-    let scale = this.map.getZoomScale(this.markerInfo.pivotZoom, zoom);
     let radiusAtPivot = marker.metadata.pivotRadius;
     let radius = this.getStaticRadius(radiusAtPivot);
     marker.marker.setRadius(radius);
@@ -658,7 +687,7 @@ interface ActiveData {
 }
 
 interface DataPack {
-  sites: SiteInfo[],
+  stations: SiteInfo[],
   raster: RasterData,
   date: Moment.Moment
 }
@@ -669,29 +698,6 @@ interface PopupData {
   popup: L.Popup
 }
 
-class TwoWayLabelMap {
-  nameToLabelMap: any;
-  labelToNameMap: any;
-
-  constructor(nameToLabelMap: {[name: string]: string}) {
-    this.labelToNameMap = {};
-    let keys = Object.keys(nameToLabelMap);
-    for(let key in keys) {
-      let label = nameToLabelMap[key];
-      this.labelToNameMap[label] = name;
-    }
-    this.nameToLabelMap = nameToLabelMap;
-  }
-
-  getLabel(name: string) {
-    return this.nameToLabelMap[name];
-  }
-
-  getName(label: string) {
-    return this.labelToNameMap[label];
-  }
-
-}
 
 
 

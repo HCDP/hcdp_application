@@ -1,7 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { SiteInfo, SiteValue } from 'src/app/models/SiteMetadata';
 import Moment from "moment";
-import { EventParamRegistrarService } from 'src/app/services/inputManager/event-param-registrar.service';
+import { EventParamRegistrarService, LoadingData } from 'src/app/services/inputManager/event-param-registrar.service';
+import { Observable, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-time-series',
@@ -12,29 +13,43 @@ export class TimeSeriesComponent implements OnInit {
 
   @Input() width: number;
 
-  loading = true;
+  selectedStation = null;
+  complete = false;
 
   selected: SiteInfo;
-  data: SiteValue[];
+  source: Subject<any>;
   date: Moment.Moment;
+  axisLabel: string;
 
   constructor(private paramService: EventParamRegistrarService) {
-    paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.selectedSite, (station: SiteInfo) => {
-      if(station) {
-        this.loading = false;
-        this.selected = station;
-      }
-      else {
-        this.loading = true;
-      }
-      this.data = null;
+    this.source = new Subject<any>();
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.selectedStation, (station: any) => {
+      this.selectedStation = station;
     });
-    paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.selectedSiteTimeSeries, (data: SiteValue[]) => {
-      //console.log(data);
-      this.data = data;
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.loading, (loadData: LoadingData) => {
+      if(loadData && loadData.tag == "timeseries") {
+        this.complete = !loadData.loading;
+      }
     });
-    paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.date, (date: Moment.Moment) => {
-      this.date = date;
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.stationTimeseries, (data: any) => {
+      if(data) {
+        this.source.next(data);
+      }
+    });
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.date, (date: Moment.Moment) => {
+      if(date) {
+        date = date.clone()
+        this.date = date;
+      }
+    });
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.dataset, (dataset: any) => {
+      if(dataset) {
+        let labelParts = dataset.label.split(" ");
+        labelParts.shift();
+        let datasetLabel = labelParts.join(" ");
+        let axisLabel = `${datasetLabel} (${dataset.unit})`;
+        this.axisLabel = axisLabel;
+      }
     });
   }
 

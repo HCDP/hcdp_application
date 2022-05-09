@@ -35,7 +35,6 @@ import { DateFocusComponent } from './components/controls/date-focus/date-focus.
 import {MatTooltipModule} from '@angular/material/tooltip';
 
 import { AngularResizedEventModule } from 'angular-resize-event';
-import { ExportComponent } from './components/export/export.component';
 import { DataViewsComponent } from './components/data-views/data-views.component';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import { SelectAutocompleteModule } from 'mat-select-autocomplete';
@@ -75,7 +74,10 @@ import { ErrorPopupComponent } from './dialogs/error-popup/error-popup.component
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import { InfoPopupComponent } from './dialogs/info-popup/info-popup.component';
 import { LeafletImageExportComponent } from './components/leaflet-controls/leaflet-image-export/leaflet-image-export.component';
+<<<<<<< HEAD
 
+=======
+>>>>>>> cc538bcf6ab972c84e5810e184a2511b1ab69e6a
 
 PlotlyModule.plotlyjs = PlotlyJS;
 
@@ -93,7 +95,6 @@ PlotlyModule.plotlyjs = PlotlyJS;
     SiteAvailabilityTableComponent,
     DataSetFormComponent,
     DateFocusComponent,
-    ExportComponent,
     DataViewsComponent,
     FilterPipe,
     NavbarComponent,

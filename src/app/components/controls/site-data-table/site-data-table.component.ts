@@ -28,7 +28,19 @@ export class SiteDataTableComponent implements OnInit {
   site: SiteInfo;
   siteIndex: string[];
 
-  @Input() selected: SiteInfo;
+  private __selected = null;
+  dataMap: any = [];
+  @Input() set selected(selected: any) {
+    this.__selected = selected;
+    if(selected) {
+      this.dataMap = this.selected2datamap();
+    }
+    else {
+      this.dataMap = [];
+    }
+  };
+
+  @Input() unit: string;
 
   focusedSiteValues: SiteValue[] = [];
   filteredFocusedSiteValues: SiteValue[] = [];
@@ -39,26 +51,6 @@ export class SiteDataTableComponent implements OnInit {
   labelR = "\u25BE";
 
   constructor(private paramService: EventParamRegistrarService) {
-    // paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.date, (date: Moment.Moment) => {
-    //   let isoDate = date.toISOString();
-    //   this.focusedMonth = isoDate.substring(0, 7);
-    //   console.log(this.focusedMonth);
-    //   this.setFocusedSiteFilter();
-    // });
-
-    // this.siteIndex = SiteInfo.getFields();
-    // paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.selectedSite, (site: SiteInfo) => {
-    //   this.focusedSiteValues = [];
-    //   this.filteredFocusedSiteValues = [];
-    //   this.site = site;
-    // });
-
-    // paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.selectedSiteTimeSeries, (siteValues: SiteValue[]) => {
-    //   //let dateFormat = /[0-9]{4}-([0-9]{2})-[0-9]{2}/;
-    //   //filter by current selected month
-    //   this.focusedSiteValues = siteValues;
-    //   this.setFocusedSiteFilter();
-    // });
   }
 
   setFocusedSiteFilter() {
@@ -92,15 +84,18 @@ export class SiteDataTableComponent implements OnInit {
     observer: "Observer",
     network: "Network",
     island: "Island",
-    elevation: "Elevation",
+    elevation_m: "Elevation (m)",
     lat: "Latitude",
     lng: "Longitude",
-    nceiID: "NCEI ID",
-    nwsID: "NWS ID",
-    scanID: "Scan ID",
-    smartNodeRfID: "Smart Node RFID",
+    ncei_id: "NCEI ID",
+    nws_id: "NWS ID",
+    nesdis_id: "NESDIS ID",
+    scan_id: "Scan ID",
+    smart_node_rf_id: "Smart Node RFID",
     value: "Value",
   }
+
+  roundedFields = new Set(["elevation_m", "lat", "lng", "value"]);
 
   islandNameMap = {
     BI: "Big Island",
@@ -110,26 +105,42 @@ export class SiteDataTableComponent implements OnInit {
     MO: "Molokaʻi",
     KO: "Kahoʻolawe"
   }
-  //
 
   selected2datamap() {
     let map = [];
-    for(let field of SiteInfo.getFields()) {
-      let fieldLabel = this.field2label[field];
-      let value = this.selected[field];
-      if(field == "island") {
-        value = this.islandNameMap[value];
+    //uhh id_field and location not excluded from properties when built (works fine with test server)
+    //makes no sense...
+    //const { id_field, location, ...properties } = this.__selected;
+    //I guess just use field2label props as a workaround
+    for(let field in this.field2label) {
+      let fieldLabel = this.field2label[field] || field;
+      if(field == this.__selected.id_field) {
+        fieldLabel += " (Station ID)";
       }
-      if(fieldLabel) {
+      let value = this.__selected[field];
+      if(value) {
+        if(field == "island") {
+          value = this.islandNameMap[value];
+        }
+        if(this.roundedFields.has(field)) {
+          value = this.roundValue(value);
+        }
+        //UNIT ISN'T PROPOGATING FOR SOME REASON, FIX
+        // if(field == "value") {
+        //   value = `${value}${this.unit}`;
+        // }
         map.push({
           field: fieldLabel,
           value: value
         });
       }
-      //console.log(field);
-      
     }
     return map;
+  }
+
+  roundValue(value: number) {
+    let rounded = Math.round(value * 100) / 100;
+    return rounded;
   }
 
 }

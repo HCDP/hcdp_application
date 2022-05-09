@@ -1,36 +1,19 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpEvent, HttpResponse, HttpErrorResponse, HttpEventType } from '@angular/common/http';
-import * as JSZip from "jszip";
-import { DbConService, Config } from '../dataLoaders/dataRequestor/auxillary/dbCon/db-con.service';
-import { map, retry, catchError, mergeMap, take } from 'rxjs/operators';
+import { Config, DbConService } from '../dataLoader/auxillary/dbCon/db-con.service';
+import { retry, catchError, take } from 'rxjs/operators';
 import { Observable, Subject, throwError } from "rxjs";
-import { saveAs }  from 'file-saver';
 import * as Moment from 'moment';
 import { ValueData } from 'src/app/models/Dataset';
-import * as zip from "client-zip";
 import { Period } from 'src/app/models/types';
 import { DateManagerService } from '../dateManager/date-manager.service';
 import { ResourceReq } from 'src/app/models/exportData';
+import { AssetManagerService } from '../util/asset-manager.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ExportManagerService {
-
-  // exportData = {
-  //   datatype:
-  //     period: {
-
-  //     },
-  //     files: {
-  //       rasters: [],
-  //       stations: []
-  //     }
-  //   files: {
-  //     rasters: [],
-  //     stations: []
-  //   }
-  // }
 
   //Master_Sta_List_Meta_2020_11_09.csv
   fileData = {
@@ -52,46 +35,24 @@ export class ExportManagerService {
   static readonly F_PART_SIZE_UL_MB = 4;
 
   ///////////////////////
-  static readonly ENDPOINT_INSTANT = "https://cistore.its.hawaii.edu:443/genzip/instant/splitlink";
-  static readonly ENDPOINT_EMAIL = "https://cistore.its.hawaii.edu:443/genzip/email/";
+  static readonly ENDPOINT_INSTANT = "https://cistore.its.hawaii.edu/genzip/instant/splitlink";
+  static readonly ENDPOINT_EMAIL = "https://cistore.its.hawaii.edu/genzip/email/";
   ///////////////////////
 
-  constructor(private http: HttpClient, private dbcon: DbConService, private dateService: DateManagerService) {
-
+  private initPromise: Promise<Config>;
+  constructor(private http: HttpClient, private dbcon: DbConService, private dateService: DateManagerService, assetService: AssetManagerService) {
+    let url = assetService.getAssetURL(DbConService.CONFIG_FILE);
+    this.initPromise = <Promise<Config>>(this.http.get(url, { responseType: "json" }).toPromise());
   }
 
-  // private getNumDatesInRange(start: Moment.Moment, end: Moment.Moment, period: Moment.unitOfTime.Diff) {
-  //   let numDates = end.diff(start, period);
-  //   return numDates;
-  // }
-
-  // packageSizeInLimit(files: ResourceInfo[]): boolean {
-  //   let numFiles = files.reduce((acc: number, value: ResourceInfo) => {
-  //     let groupSize: number;
-  //     let dates = value.fileData.dates;
-  //     if(dates) {
-  //       groupSize = this.getNumDatesInRange(dates.dates.start, dates.dates.end, dates.period);
-  //     }
-  //     else {
-  //       groupSize = 1;
-  //     }
-  //     return acc + groupSize;
-  //   }, 0);
-  //   console.log(files, numFiles);
-  //   return numFiles <= ExportManagerService.MAX_INSTANT_PACKAGE_FILES;
-  // }
-
-
-
-
-
-
   async submitEmailPackageReq(reqs: ResourceReq[], email: string): Promise<void> {
+    let config: Config = await this.initPromise;
     let reqBody = {
-      fileData: reqs,
+      data: reqs,
       email: email
     };
-    let head = new HttpHeaders();
+    let head = new HttpHeaders()
+    .set("Authorization", "Bearer " + config.oAuthAccessToken);
     const responseType: "text" = "text";
     let reqOpts = {
       headers: head,
@@ -122,11 +83,14 @@ export class ExportManagerService {
   }
 
 
-  async submitInstantDownloadReq(reqs: ResourceReq[]): Promise<Observable<number>> {
+  async submitInstantDownloadReq(reqs: ResourceReq[], email: string): Promise<Observable<number>> {
+    let config: Config = await this.initPromise;
     let reqBody = {
-      fileData: reqs
+      data: reqs,
+      email: email
     };
-    let head = new HttpHeaders();
+    let head = new HttpHeaders()
+    .set("Authorization", "Bearer " + config.oAuthAccessToken);
     const responseType: "json" = "json";
     let reqOpts = {
       headers: head,
@@ -149,7 +113,6 @@ export class ExportManagerService {
           let timeSec = time / 1000;
           console.log(`Got generated file names, time elapsed ${timeSec} seconds`);
           let files: string[] = response.files;
-          console.log(files);
           let downloadData: DownloadData = this.getFiles(files);
           //resolve with data monitor
           resolve(downloadData.progress);
@@ -163,8 +126,6 @@ export class ExportManagerService {
           reject(error);
         });
     });
-
-
   }
 
 
@@ -187,7 +148,6 @@ export class ExportManagerService {
     let fileBaseSize = ExportManagerService.F_PART_SIZE_UL_MB * 1024 * 1024;
     let sizeUL = files.length * fileBaseSize;
     let percentCoeff = 100 / sizeUL;
-    console.log(sizeUL, percentCoeff);
 
     let data: Promise<Blob> = new Promise((resolve, reject) => {
       let responses: ArrayBuffer[] = new Array(files.length);
@@ -202,14 +162,12 @@ export class ExportManagerService {
       for(let i = files.length - 1; i >= 0; i--) {
         let file = files[i];
         this.getFile(file).subscribe((event: HttpEvent<ArrayBuffer>) => {
-          // console.log(event);
           if(event.type === HttpEventType.DownloadProgress) {
             //if this is the last file (odd man out) and the total size field in the event is populated then adjust the total package size and percent coeff
             if(!actualSizeFound && i == files.length - 1 && event.total) {
               actualSize += event.total;
               //recompute coeff
               percentCoeff = 100 / actualSize;
-              // console.log(actualSize, percentCoeff);
               actualSizeFound = true;
             }
             progressStore[i] = event.loaded;
@@ -258,8 +216,6 @@ export class ExportManagerService {
       reportProgress: true,
       observe: observe
     };
-
-    console.log(url);
 
     return this.http.get(url, options)
     .pipe(

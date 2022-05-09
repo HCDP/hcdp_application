@@ -8,6 +8,7 @@ import { ColorGeneratorService, XMLColorSchemeData } from 'src/app/services/rast
 import { ColorScale } from 'src/app/models/colorScale';
 import { CustomColorSchemeService } from 'src/app/services/helpers/custom-color-scheme.service';
 import { AssetManagerService } from 'src/app/services/util/asset-manager.service';
+import { EventParamRegistrarService } from 'src/app/services/inputManager/event-param-registrar.service';
 
 @Component({
   selector: 'app-leaflet-layer-control-extension',
@@ -21,11 +22,11 @@ export class LeafletLayerControlExtensionComponent implements OnInit {
   private layers: Layer;
   public schemeControl: FormControl;
   //change to input?
-  private defaultScheme: string = "mono";
+  private defaultScheme: string = "viridis";
   baseColorSchemes = {
     mono: "Monochromatic",
     usgs: "USGS",
-    viridus: "Viridis",
+    viridis: "Viridis",
     turbo: "Turbo",
     tacc3: "TACC 3-wave",
     tacc4: "TACC 4-wave",
@@ -45,7 +46,6 @@ export class LeafletLayerControlExtensionComponent implements OnInit {
   //
   @Input() set map(map: Map) {
     if(map) {
-      //console.log(map);
       this._map = map;
       let LayerControl = <any>Control.Layers.extend({
         onAdd: function() {
@@ -89,13 +89,19 @@ export class LeafletLayerControlExtensionComponent implements OnInit {
     return this._map
   }
 
-  constructor(public helper: CustomColorSchemeService, public dialog: MatDialog, private colors: ColorGeneratorService, private assetService: AssetManagerService) {
+  constructor(public helper: CustomColorSchemeService, public dialog: MatDialog, private colors: ColorGeneratorService, private assetService: AssetManagerService, private paramService: EventParamRegistrarService) {
     this.opacity = new EventEmitter<number>();
     this.colorScheme = new EventEmitter<ColorScale>();
     this.schemeControl = new FormControl(this.defaultScheme);
     this.customColorSchemes = {};
     this.forbiddenNames = new Set<string>(Object.values(this.baseColorSchemes));
     this.debounce = false;
+
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.dataset, (dataset: any) => {
+      if(dataset) {
+        this.schemeControl.setValue(this.schemeControl.value);
+      }
+    });
   }
 
   removeCustomColorScheme(tag: string) {
@@ -133,7 +139,6 @@ export class LeafletLayerControlExtensionComponent implements OnInit {
             this.schemeControl.setValue(tag);
           }
           let colorScheme = colorSchemeData[1];
-          console.log(scheme, colorScheme);
           this.colorScheme.emit(colorScheme);
         })
         .catch((reason: {cancelled: boolean, reason: any}) => {
@@ -146,13 +151,13 @@ export class LeafletLayerControlExtensionComponent implements OnInit {
             if(reversionValue === null) {
               reversionValue = this.defaultScheme
             }
-            console.log(reversionValue);
             this.schemeControl.setValue(reversionValue);
           }
         });
       }
 
     });
+
   }
 
   ngOnDestroy() {
@@ -191,7 +196,6 @@ export class LeafletLayerControlExtensionComponent implements OnInit {
         data: this.forbiddenNames
       });
       dialogRef.afterClosed().toPromise().then((data: XMLColorSchemeData) => {
-
         if(data) {
           let colorScheme = data.colors;
           let name = data.name;
@@ -209,8 +213,9 @@ export class LeafletLayerControlExtensionComponent implements OnInit {
 
   }
 
+  //note you are recomputing the color scheme every time one is selected, only really need to compute all of them once when the dataset changes, maybe should change this
+  //also wouldn't need promise chaining and all that if precomputed
   getColorScheme(scheme: string): Promise<[string, ColorScale]> {
-
     let getColorSchemeFromAssetFile = (fname: string, reverse?: boolean): Promise<ColorScale> => {
       return this.colors.getColorSchemeFromAssetFile(fname, reverse).then((data: XMLColorSchemeData) => {
         return data.colors;
@@ -243,8 +248,8 @@ export class LeafletLayerControlExtensionComponent implements OnInit {
         p = Promise.resolve(data);
         break;
       }
-      case "viridus": {
-        let colorScheme = this.colors.getViridusColorScale();
+      case "viridis": {
+        let colorScheme = this.colors.getViridisColorScale();
         let data: [string, ColorScale] = [scheme, colorScheme]
         p = Promise.resolve(data);
         break;
@@ -304,14 +309,21 @@ export class LeafletLayerControlExtensionComponent implements OnInit {
       //any other value should be custom color scheme
       default: {
         //get color scheme from map
-        let colorScheme = this.customColorSchemes[scheme].colors;
+        let schemeData = this.customColorSchemes[scheme];
+        if(schemeData) {
+          const { xml, reverse } = schemeData;
+          //reload to ensure scale data is updated when changed
+          p = this.colors.getColorSchemeFromXML(xml, reverse).then((schemeData: XMLColorSchemeData) => {
+            let colorScale = schemeData.colors;
+            let data: [string, ColorScale] = [scheme, colorScale];
+            return data;
+          });
+        }
         //failsafe, should never happen (should only happen if reverting after deletion, before default loads, which should be pretty much impossible in practice), but keep just in case
         //just return recursive call with default scheme
-        if(colorScheme === undefined) {
+        else {
           p = this.getColorScheme(this.defaultScheme);
         }
-        let data: [string, ColorScale] = [scheme, colorScheme];
-        p = Promise.resolve(data);
       }
     }
 
@@ -347,7 +359,6 @@ class CancellablePromise<T> {
       .catch((reason: any) => {
         //if cancelled promise was already rejected, shouldn't do anything
         if(!this.cancelled) {
-          console.log("here???", reason);
           //propogate reject
           reject({
             cancelled: false,

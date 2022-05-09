@@ -22,12 +22,12 @@ export class SiteAvailabilityTableComponent implements AfterViewInit, AfterConte
     KO: "Kahoʻolawe"
   }
 
-  @Input() set stations(stations: SiteInfo[]) {
+  @Input() set stations(stations: any[]) {
     this.tableData.rows = [];
     for(let station of stations) {
       let values = [];
       values.push(station.name);
-      values.push(station.skn);
+      values.push(station[station.id_field]);
       let island = this.islandNameMap[station.island];
       values.push(island);
       this.tableData.rows.push({
@@ -37,17 +37,20 @@ export class SiteAvailabilityTableComponent implements AfterViewInit, AfterConte
         values: values
       });
     }
+    //delay to give element refs time to update, then trigger station select in table if it exists
+    setTimeout(() => {
+      this.selected = this.selectedStation;
+    }, 0);
+
   }
 
-
+  selectedStation = null;
   @Input() set selected(station: SiteInfo) {
+    this.selectedStation = station;
     if(station) {
       let index = this.siteMap.get(station);
-      //can unfiltered elements be selected? if so remove error and just ignore
-      if(index === undefined) {
-        console.error(`No mapping for selected site in site table.`);
-      }
-      else {
+      //only select if station exists in table
+      if(index !== undefined) {
         this.selectFromTable(index);
         this.cdr.detectChanges();
       }
@@ -58,7 +61,7 @@ export class SiteAvailabilityTableComponent implements AfterViewInit, AfterConte
       }
       this.selectedRef = undefined;
     }
-    
+
   }
   @Output() selectedChange: EventEmitter<SiteInfo> = new EventEmitter<SiteInfo>();
 
@@ -70,7 +73,7 @@ export class SiteAvailabilityTableComponent implements AfterViewInit, AfterConte
   constructor(private cdr: ChangeDetectorRef) {
     this.siteMap = new Map<SiteInfo, number>();
     this.tableData = {
-      header: ["Name", "SKN", "Island"],
+      header: ["Name", "Station ID", "Island"],
       rows: []
     }
 
@@ -91,16 +94,8 @@ export class SiteAvailabilityTableComponent implements AfterViewInit, AfterConte
       //console.log(rows);
       this.generateRowMap(rows);
     });
-    // this.paramService.createParameterHook(EventParamRegistrarService.GLOBAL_HANDLE_TAGS.selectedSite, (site: SiteInfo) => {
-    //   // if(site === null) {
-    //   //   if(this.selectedRef !== undefined) {
-    //   //     this.selectedRef.selected = false;
-    //   //   }
-    //   //   this.cdr.detectChanges();
-    //   // }
-      
 
-    // });
+
   }
 
   ngAfterContentInit() {
@@ -108,9 +103,9 @@ export class SiteAvailabilityTableComponent implements AfterViewInit, AfterConte
   }
 
   setSelected(selected: ElementRef, i: number) {
-    let site = this.tableData.rows[i].station;
+    let station = this.tableData.rows[i].station;
     // this.paramService.pushSiteSelect(site);
-    this.selectedChange.emit(site);
+    this.selectedChange.emit(station);
   }
 
   selectFromTable(rowIndex: number) {
@@ -126,7 +121,6 @@ export class SiteAvailabilityTableComponent implements AfterViewInit, AfterConte
     if(position < viewRange[0] || position >= viewRange[1]) {
       tbodyEl.scrollTo(0, position);
     }
-    console.log(this.selectedRef);
     this.selectedRef.selected = true;
   }
 

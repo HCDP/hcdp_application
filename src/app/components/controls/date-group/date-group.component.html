@@ -1,0 +1,14 @@
+<mat-form-field>
+  <mat-label></mat-label>
+  <mat-select
+    disableOptionCentering="true"
+    [formControl]="control">
+    <mat-option
+      *ngFor="let period of periodAvailability[controls.dataset.value]"
+      [value]="periods.values[period].value"
+      matTooltipPosition="right"
+      [matTooltip]="periods.values[period].description">
+      {{periods.values[period].label}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>

@@ -5,7 +5,6 @@ import * as L from "leaflet";
 import { SiteMetadata } from 'src/app/models/SiteMetadata';
 import { InternalPointsService } from "../../services/geospatial/internal-points.service";
 import { StationFilteringService, FilteredStations, StationMetadata, Filter, FilterBase, FilterGroup } from "../../services/filters/station-filtering.service";
-import { AnimationStyleMetadata } from '@angular/animations';
 import { RoseControlOptions } from '../leaflet-controls/leaflet-compass-rose/leaflet-compass-rose.component';
 import { AssetManagerService } from 'src/app/services/util/asset-manager.service';
 
@@ -112,7 +111,8 @@ export class FilterMapComponent implements OnInit {
 
     this.baseLayers = {
       Satellite: L.tileLayer("http://www.google.com/maps/vt?lyrs=y@189&gl=en&x={x}&y={y}&z={z}"),
-      Street: L.tileLayer('https://www.google.com/maps/vt?lyrs=m@221097413,traffic&x={x}&y={y}&z={z}')
+      Street: L.tileLayer('https://www.google.com/maps/vt?lyrs=m@221097413,traffic&x={x}&y={y}&z={z}'),
+      Test: L.tileLayer("https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}@2x.png")
     };
 
     this.leafletOptions = {
