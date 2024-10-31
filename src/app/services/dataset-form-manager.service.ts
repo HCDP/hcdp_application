@@ -250,6 +250,9 @@ export class DatasetFormManagerService {
     let ndviFormData = new FormData([
       periodNode
     ], []);
+    let fireRiskFormData = new FormData([
+      periodNode
+    ], []);
     let rhFormData = new FormData([
       periodNode
     ], [
@@ -286,6 +289,8 @@ export class DatasetFormManagerService {
     let dateNDVIStart = moment("2000-02-18");
     let dateNDVIEnd = moment("2023-07-12");
     let dateRHStart = moment("2002-01-01");
+    let dateFireRiskStart = moment("2002-01-01");
+    let dateFireRiskEnd = moment("2024=08-13");
     ////periods
     let yearPeriod = new PeriodData("year", 1, "year");
     let monthPeriod = new PeriodData("month", 1, "month");
@@ -299,6 +304,7 @@ export class DatasetFormManagerService {
     let dsDynamicalFocusManager = new TimeSelectorData(dsPeriodDynamicalNode, periodPresent);
     let dsStatisticalFocusManager = new TimeSelectorData(dsPeriodStatisticalNode, periodPresent);
     let ndviFocusManager = new NDVITimeseriesData(dateNDVIStart, dateNDVIEnd, day16Period, yearPeriod, this.dateHandler, dateNDVIEnd);
+    let fireRiskFocusManager = new TimeseriesData(dateFireRiskStart, dateFireRiskEnd, dayPeriod, monthPeriod, this.dateHandler, dateFireRiskEnd);
     let rhFocusManager = new TimeseriesData(dateRHStart, lastDay, dayPeriod, monthPeriod, this.dateHandler, lastDay);
     let climatologyFocusManager = new TimeSelectorData(climatologyPeriodNode, periodJanuary);
 
@@ -625,6 +631,11 @@ export class DatasetFormManagerService {
       period: "16day"
     });
 
+    //Fire risk
+    let fireRiskDay = new VisDatasetItem(false, true, "", "", "Fire Risk", "Fire Risk", [0, 1], [true, true], fireRiskFocusManager, [fireRiskFocusManager], true, {
+      period: "day"
+    });
+
     ////Datasets
     let rainfallDatasetDisplayData = new DisplayData("Rainfall data (1990 - present).", "Rainfall", "rainfall");
     let legacyRainfallDatasetDisplayData = new DisplayData("Legacy rainfall data based on older production methods (1920 - 2012).", "Legacy Rainfall", "legacy_rainfall");
@@ -635,6 +646,7 @@ export class DatasetFormManagerService {
     let dsTemperatureDatasetDisplayData = new DisplayData("Downscaled future projections for temperature data.", "Temperature Projections", "ds_temp");
     let ndviDatasetDisplayData = new DisplayData("Normalized Difference Vegetation Index", "NDVI", "ndvi");
     let rhDatasetDisplayData = new DisplayData("Relative humidity data", "Relative Humidity", "rh");
+    let fireRiskDatasetDisplayData = new DisplayData("Probability of fire ignition based on environmental conditions", "Fire Risk", "fire_risk");
 
     let contemporaryRainfallClimatologyDatasetDisplayData = new DisplayData("Mean rainfall climatologies", "Mean Rainfall", "contemporary_mean_rf_climatology");
     let legacyRainfallClimatologyDatasetDisplayData = new DisplayData("Mean rainfall climatologies", "Mean Rainfall", "legacy_mean_rf_climatology");
@@ -697,6 +709,11 @@ export class DatasetFormManagerService {
       rhDayPartial,
       //rhDayRaw
     ]);
+    let fireRiskVisDataset = new Dataset<VisDatasetItem>(fireRiskDatasetDisplayData, {
+      datatype: "fire_risk"
+    }, fireRiskFormData, [
+      fireRiskDay
+    ]);
 
     let contemporaryRainfallClimatologyVisDataset = new Dataset<VisDatasetItem>(contemporaryRainfallClimatologyDatasetDisplayData, {
       datatype: "contemporary_climatology",
@@ -744,7 +761,7 @@ export class DatasetFormManagerService {
     //////////////////////////////////////////////////////////////////////
 
     //filetypes
-    let geotiffFtype = new FileType("GeoTIFF", "tif", "Geotiff files are a variant of the TIFF file format which is used to store raster based data/graphics including georeferencing information.");
+    let geotiffFtype = new FileType("GeoTIFF", "tif", "GeoTIFF files are a variant of the TIFF file format which is used to store raster based data/graphics including georeferencing information.");
     let txtFtype = new FileType("Text", "txt", "A plaintext file.");
     let csvFtype = new FileType("Comma-Separated Values", "csv", "A text based file with data separated by commas.");
     let pdfFtype = new FileType("PDF", "pdf", "A portable document format file.");
@@ -761,6 +778,7 @@ export class DatasetFormManagerService {
     let metadataDisplayData = new DisplayData("Gridded map product metadata and error metrics.", "Metadata and Error Metrics", "metadata");
     let stationPartialDisplayData = new DisplayData("Processed station data including each station's metadata and values over a period of time", "Station Data", "station_data");
     let ndviDisplayData = new DisplayData("A gridded normalized difference vegetation index (NDVI) map representing estimated values over the state of Hawaiʻi.", "NDVI Map", "data_map");
+    let fireRiskMapDisplayData = new DisplayData("A gridded fire risk map representing the likelihood of fire ignition over the state of Hawaiʻi.", "Fire Risk Map", "data_map");
     let rhMapDisplayData = new DisplayData("A gridded relative humidity map representing estimated relative humidity percentages over the state of Hawaiʻi.", "Relative Humidity Map", "data_map");
     let climatologyRainfallMapDisplayData = new DisplayData("A gridded map displaying the average estimated rainfall over the selected time period.", "Rainfall Map", "data_map");
     let climatologyTemperatureMapDisplayData = new DisplayData("A gridded map displaying the average estimated mean temperature over the selected time period.", "Temperature Map", "data_map");
@@ -810,6 +828,7 @@ export class DatasetFormManagerService {
     let stationFile = new FileData(stationPartialDisplayData, csvFtype, []);
     let ndviMapFile = new FileData(ndviDisplayData, geotiffFtype, []);
     let rhMapFile = new FileData(rhMapDisplayData, geotiffFtype, ["metadata"]);
+    let fireRiskMapFile = new FileData(fireRiskMapDisplayData, geotiffFtype, []);
     let legacyClimatologyRainfallMapFile = new FileData(climatologyRainfallMapDisplayData, geotiffFtype, ["metadata"]);
     let legacyClimatologyTemperatureMapFile = new FileData(climatologyTemperatureMapDisplayData, geotiffFtype, ["metadata"]);
     let contemporaryClimatologyRainfallMapFile = new FileData(climatologyRainfallMapDisplayData, geotiffFtype, []);
@@ -846,6 +865,8 @@ export class DatasetFormManagerService {
     let rhDayMapFileGroup = new FileGroup(new DisplayData("", "", "s"), [rhMapFile, metadataFile], [allExtentProperty, percentUnitsProperty]);
     let rhDayStationFileGroup = new FileGroup(new DisplayData("", "", "t"), [stationFile], [statewideProperty, percentUnitsProperty, fillPartialProperty]);
 
+    let fireRiskMapGroup = new FileGroup(new DisplayData("", "", "ae"), [fireRiskMapFile], [statewideProperty]);
+
     let contemporaryClimatologyRainfallMonthFileGroup = new FileGroup(new DisplayData("", "", "u"), [contemporaryClimatologyRainfallMapFile], [statewideProperty, monthClimatologyProperty]);
     let contemporaryClimatologyRainfallDecadeFileGroup = new FileGroup(new DisplayData("", "", "v"), [contemporaryClimatologyRainfallMapFile], [statewideProperty, decadalClimatologyProperty]);
     let contemporaryClimatologyRainfall30yrFileGroup = new FileGroup(new DisplayData("", "", "w"), [contemporaryClimatologyRainfallMapFile], [statewideProperty, yr30ClimatologyProperty]);
@@ -864,6 +885,7 @@ export class DatasetFormManagerService {
     let temperatureMonthTimeseriesHandler = new TimeseriesHandler(date1990, lastMonth, monthPeriod, this.dateHandler);
     let ndviTimeseriesHandler = new TimeseriesHandler(dateNDVIStart, dateNDVIEnd, day16Period, this.dateHandler);
     let rhDayTimeseriesHandler = new TimeseriesHandler(dateRHStart, lastDay, dayPeriod, this.dateHandler);
+    let fireRiskDayTimeseriesHandler = new TimeseriesHandler(dateFireRiskStart, dateFireRiskEnd, dayPeriod, this.dateHandler);
 
     //export items
     ////rainfall
@@ -902,6 +924,11 @@ export class DatasetFormManagerService {
     let rhDayExportItem = new ExportDatasetItem([rhDayMapFileGroup, rhDayStationFileGroup], {
       period: "day"
     }, "Daily Relative Humidity", rhDayTimeseriesHandler);
+    //fire risk
+    let fireRiskDayExportItem = new ExportDatasetItem([fireRiskMapGroup], {
+      period: "day"
+    }, "Daily Fire Risk", fireRiskDayTimeseriesHandler);
+    //fireRiskMapGroup
     ////ds
     //////DS Rainfall
 
@@ -1075,6 +1102,11 @@ export class DatasetFormManagerService {
     }, periodOnlyFormData, [
       rhDayExportItem
     ]);
+    let fireRiskExportDataset = new Dataset<ExportDatasetItem>(fireRiskDatasetDisplayData, {
+      datatype: "fire_risk"
+    }, periodOnlyFormData, [
+      fireRiskDayExportItem
+    ]);
 
     let contemporaryClimatologyRainfallExportDataset = new Dataset<ExportDatasetItem>(contemporaryRainfallClimatologyDatasetDisplayData, {
       datatype: "contemporary_climatology",
@@ -1156,8 +1188,8 @@ export class DatasetFormManagerService {
     let legacyClimatologyGrouperDisplayData = new DisplayData("Legacy Climatologies.", "Legacy Climatology", "legacy_climatology");
     let datasetFormDisplayData = new DisplayData("Select the type of data you would like to view. Hover over an option for a description of the dataset.", "Dataset", "dataset");
     //vis dataset groups
-    let visDatasets = [rainfallVisDataset, legacyRainfallVisDataset, maxTemperatureVisDataset, minTemperatureVisDataset, meanTemperatureVisDataset, dsRainfallVisDataset, dsTemperatureVisDataset, ndviVisDataset, rhVisDataset, contemporaryRainfallClimatologyVisDataset, legacyRainfallClimatologyVisDataset, contemporaryMeanTemperatureClimatologyVisDataset, contemporaryMaxTemperatureClimatologyVisDataset, contemporaryMinTemperatureClimatologyVisDataset, legacyMeanTemperatureClimatologyVisDataset, legacyMaxTemperatureClimatologyVisDataset, legacyMinTemperatureClimatologyVisDataset];
-    let visDatasetSingles: Dataset<VisDatasetItem>[] = [ndviVisDataset, rhVisDataset];
+    let visDatasets = [rainfallVisDataset, legacyRainfallVisDataset, maxTemperatureVisDataset, minTemperatureVisDataset, meanTemperatureVisDataset, dsRainfallVisDataset, dsTemperatureVisDataset, ndviVisDataset, rhVisDataset, fireRiskVisDataset, contemporaryRainfallClimatologyVisDataset, legacyRainfallClimatologyVisDataset, contemporaryMeanTemperatureClimatologyVisDataset, contemporaryMaxTemperatureClimatologyVisDataset, contemporaryMinTemperatureClimatologyVisDataset, legacyMeanTemperatureClimatologyVisDataset, legacyMaxTemperatureClimatologyVisDataset, legacyMinTemperatureClimatologyVisDataset];
+    let visDatasetSingles: Dataset<VisDatasetItem>[] = [ndviVisDataset, rhVisDataset, fireRiskVisDataset];
     let visDatasetGroupers: DatasetSelectorGroup[] = [
       new DatasetSelectorGroup(historicalRainfallGrouperDisplayData, [rainfallVisDataset, legacyRainfallVisDataset]),
       new DatasetSelectorGroup(historicalTemperatureGrouperDisplayData, [maxTemperatureVisDataset, minTemperatureVisDataset, meanTemperatureVisDataset]),
@@ -1168,8 +1200,8 @@ export class DatasetFormManagerService {
     let visDatasetFormData = new DatasetFormData(datasetFormDisplayData, visDatasetSingles, visDatasetGroupers);
 
     //export dataset groups
-    let exportDatasets = [rainfallExportDataset, legacyRainfallExportDataset, maxTemperatureExportDataset, minTemperatureExportDataset, meanTemperatureExportDataset, dsRainfallExportDataset, dsTemperatureExportDataset, ndviExportDataset, rhExportDataset, contemporaryClimatologyRainfallExportDataset, legacyClimatologyRainfallExportDataset, contemporaryClimatologyMeanTemperatureExportDataset, contemporaryClimatologyMaxTemperatureExportDataset, contemporaryClimatologyMinTemperatureExportDataset, legacyClimatologyMeanTemperatureExportDataset, legacyClimatologyMaxTemperatureExportDataset, legacyClimatologyMinTemperatureExportDataset];
-    let exportDatasetSingles: Dataset<ExportDatasetItem>[] = [ndviExportDataset, rhExportDataset];
+    let exportDatasets = [rainfallExportDataset, legacyRainfallExportDataset, maxTemperatureExportDataset, minTemperatureExportDataset, meanTemperatureExportDataset, dsRainfallExportDataset, dsTemperatureExportDataset, ndviExportDataset, rhExportDataset, fireRiskExportDataset, contemporaryClimatologyRainfallExportDataset, legacyClimatologyRainfallExportDataset, contemporaryClimatologyMeanTemperatureExportDataset, contemporaryClimatologyMaxTemperatureExportDataset, contemporaryClimatologyMinTemperatureExportDataset, legacyClimatologyMeanTemperatureExportDataset, legacyClimatologyMaxTemperatureExportDataset, legacyClimatologyMinTemperatureExportDataset];
+    let exportDatasetSingles: Dataset<ExportDatasetItem>[] = [ndviExportDataset, rhExportDataset, fireRiskExportDataset];
     let exportDatasetGroupers: DatasetSelectorGroup[] = [
       new DatasetSelectorGroup(historicalRainfallGrouperDisplayData, [rainfallExportDataset, legacyRainfallExportDataset]),
       new DatasetSelectorGroup(historicalTemperatureGrouperDisplayData, [maxTemperatureExportDataset, minTemperatureExportDataset, meanTemperatureExportDataset]),

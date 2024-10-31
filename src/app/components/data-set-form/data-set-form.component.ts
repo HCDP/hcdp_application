@@ -12,7 +12,7 @@ import { MatTabGroup } from '@angular/material/tabs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DataSetFormComponent implements OnInit, AfterViewInit {
-  private static readonly FORM_ORDER = ["historical_rainfall", "historical_temperature", "rh", "ndvi", "downscaled", "contemporary_climatology", "legacy_climatology"];
+  private static readonly FORM_ORDER = ["historical_rainfall", "historical_temperature", "rh", "ndvi", "fire_risk", "downscaled", "contemporary_climatology", "legacy_climatology"];
 
   datasetData: DatasetData[];
 
