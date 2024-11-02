@@ -1188,8 +1188,8 @@ export class DatasetFormManagerService {
     let legacyClimatologyGrouperDisplayData = new DisplayData("Legacy Climatologies.", "Legacy Climatology", "legacy_climatology");
     let datasetFormDisplayData = new DisplayData("Select the type of data you would like to view. Hover over an option for a description of the dataset.", "Dataset", "dataset");
     //vis dataset groups
-    let visDatasets = [rainfallVisDataset, legacyRainfallVisDataset, maxTemperatureVisDataset, minTemperatureVisDataset, meanTemperatureVisDataset, dsRainfallVisDataset, dsTemperatureVisDataset, ndviVisDataset, rhVisDataset, fireRiskVisDataset, contemporaryRainfallClimatologyVisDataset, legacyRainfallClimatologyVisDataset, contemporaryMeanTemperatureClimatologyVisDataset, contemporaryMaxTemperatureClimatologyVisDataset, contemporaryMinTemperatureClimatologyVisDataset, legacyMeanTemperatureClimatologyVisDataset, legacyMaxTemperatureClimatologyVisDataset, legacyMinTemperatureClimatologyVisDataset];
-    let visDatasetSingles: Dataset<VisDatasetItem>[] = [ndviVisDataset, rhVisDataset, fireRiskVisDataset];
+    let visDatasets = [rainfallVisDataset, legacyRainfallVisDataset, maxTemperatureVisDataset, minTemperatureVisDataset, meanTemperatureVisDataset, dsRainfallVisDataset, dsTemperatureVisDataset, ndviVisDataset, rhVisDataset, /*fireRiskVisDataset,*/ contemporaryRainfallClimatologyVisDataset, legacyRainfallClimatologyVisDataset, contemporaryMeanTemperatureClimatologyVisDataset, contemporaryMaxTemperatureClimatologyVisDataset, contemporaryMinTemperatureClimatologyVisDataset, legacyMeanTemperatureClimatologyVisDataset, legacyMaxTemperatureClimatologyVisDataset, legacyMinTemperatureClimatologyVisDataset];
+    let visDatasetSingles: Dataset<VisDatasetItem>[] = [ndviVisDataset, rhVisDataset/*, fireRiskVisDataset*/];
     let visDatasetGroupers: DatasetSelectorGroup[] = [
       new DatasetSelectorGroup(historicalRainfallGrouperDisplayData, [rainfallVisDataset, legacyRainfallVisDataset]),
       new DatasetSelectorGroup(historicalTemperatureGrouperDisplayData, [maxTemperatureVisDataset, minTemperatureVisDataset, meanTemperatureVisDataset]),
@@ -1200,8 +1200,8 @@ export class DatasetFormManagerService {
     let visDatasetFormData = new DatasetFormData(datasetFormDisplayData, visDatasetSingles, visDatasetGroupers);
 
     //export dataset groups
-    let exportDatasets = [rainfallExportDataset, legacyRainfallExportDataset, maxTemperatureExportDataset, minTemperatureExportDataset, meanTemperatureExportDataset, dsRainfallExportDataset, dsTemperatureExportDataset, ndviExportDataset, rhExportDataset, fireRiskExportDataset, contemporaryClimatologyRainfallExportDataset, legacyClimatologyRainfallExportDataset, contemporaryClimatologyMeanTemperatureExportDataset, contemporaryClimatologyMaxTemperatureExportDataset, contemporaryClimatologyMinTemperatureExportDataset, legacyClimatologyMeanTemperatureExportDataset, legacyClimatologyMaxTemperatureExportDataset, legacyClimatologyMinTemperatureExportDataset];
-    let exportDatasetSingles: Dataset<ExportDatasetItem>[] = [ndviExportDataset, rhExportDataset, fireRiskExportDataset];
+    let exportDatasets = [rainfallExportDataset, legacyRainfallExportDataset, maxTemperatureExportDataset, minTemperatureExportDataset, meanTemperatureExportDataset, dsRainfallExportDataset, dsTemperatureExportDataset, ndviExportDataset, rhExportDataset, /*fireRiskExportDataset,*/ contemporaryClimatologyRainfallExportDataset, legacyClimatologyRainfallExportDataset, contemporaryClimatologyMeanTemperatureExportDataset, contemporaryClimatologyMaxTemperatureExportDataset, contemporaryClimatologyMinTemperatureExportDataset, legacyClimatologyMeanTemperatureExportDataset, legacyClimatologyMaxTemperatureExportDataset, legacyClimatologyMinTemperatureExportDataset];
+    let exportDatasetSingles: Dataset<ExportDatasetItem>[] = [ndviExportDataset, rhExportDataset, /*fireRiskExportDataset*/];
     let exportDatasetGroupers: DatasetSelectorGroup[] = [
       new DatasetSelectorGroup(historicalRainfallGrouperDisplayData, [rainfallExportDataset, legacyRainfallExportDataset]),
       new DatasetSelectorGroup(historicalTemperatureGrouperDisplayData, [maxTemperatureExportDataset, minTemperatureExportDataset, meanTemperatureExportDataset]),
