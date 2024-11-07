@@ -44,7 +44,7 @@ export class DatasetFormManagerService {
     //Climatology mean type
     let meanMonthly = new FormValue(new DisplayData("Mean monthly maps", "Mean Monthly", "mean_monthly"), {mean_type: "mean_monthly"}, [true, true]);
     let meanAnnual30 = new FormValue(new DisplayData("Annual maps averaged over a 30 year period", "Mean 30 Year Annual", "mean_30yr_annual"), {mean_type: "mean_30yr_annual"}, [true, true]);
-    let meanAnnualDecadal = new FormValue(new DisplayData("Annual maps aggregated over the 2011-2020 decade", "Mean Annual Decadal", "mean_annual_decadal"), {mean_type: "mean_annual_decadal"}, [true, true]);
+    let meanAnnualDecadal = new FormValue(new DisplayData("Annual maps aggregated by decade", "Mean Annual Decadal", "mean_annual_decadal"), {mean_type: "mean_annual_decadal"}, [true, true]);
     //Climatology period
     let periodJanuaryLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of January over the years 1920-2012", "January", "january"), {period: "january"}, [true, true]);
     let periodFebruaryLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of February over the years 1920-2012", "February", "february"), {period: "february"}, [true, true]);
