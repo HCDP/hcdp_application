@@ -177,7 +177,7 @@ export class DatasetFormManagerService {
       meanAnnual30
     ]);
 
-    let climatologyLegacyPeriodNode = new FormNode(new DisplayData("The time period over which the data is averaged", "Data Period", "cl_mean"), [
+    let climatologyLegacyPeriodNode = new FormNode(new DisplayData("The time period over which station data were averaged to create the map (see Giambelluca et al., 2013).", "Data Period", "cl_mean"), [
       periodJanuaryLegacy,
       periodFebruaryLegacy,
       periodMarchLegacy,
@@ -195,7 +195,7 @@ export class DatasetFormManagerService {
       periodDecadal2011,
       period30yrLegacy
     ]);
-    let climatologyContemporaryPeriodNode = new FormNode(new DisplayData("The time period over which the data is averaged", "Data Period", "cl_mean"), [
+    let climatologyContemporaryPeriodNode = new FormNode(new DisplayData("The time period over which month-year maps were averaged to create the map.", "Data Period", "cl_mean"), [
       periodJanuaryContemporary,
       periodFebruaryContemporary,
       periodMarchContemporary,
