@@ -59,18 +59,18 @@ export class DatasetFormManagerService {
     let periodNovemberLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of November over the years 1920-2012", "November", "november"), {period: "november"}, [true, true]);
     let periodDecemberLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of December over the years 1920-2012", "December", "december"), {period: "december"}, [true, true]);
 
-    let periodJanuaryContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of January over the years 1990-Present", "January", "january"), {period: "january"}, [true, true]);
-    let periodFebruaryContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of February over the years 1990-Present", "February", "february"), {period: "february"}, [true, true]);
-    let periodMarchContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of March over the years 1990-Present", "March", "march"), {period: "march"}, [true, true]);
-    let periodAprilContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of April over the years 1990-Present", "April", "april"), {period: "april"}, [true, true]);
-    let periodMayContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of May over the years 1990-Present", "May", "may"), {period: "may"}, [true, true]);
-    let periodJuneContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of June over the years 1990-Present", "June", "june"), {period: "june"}, [true, true]);
-    let periodJulyContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of July over the years 1990-Present", "July", "july"), {period: "july"}, [true, true]);
-    let periodAugustContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of August over the years 1990-Present", "August", "august"), {period: "august"}, [true, true]);
-    let periodSeptemberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of September over the years 1990-Present", "September", "september"), {period: "september"}, [true, true]);
-    let periodOctoberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of October over the years 1990-Present", "October", "october"), {period: "october"}, [true, true]);
-    let periodNovemberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of November over the years 1990-Present", "November", "november"), {period: "november"}, [true, true]);
-    let periodDecemberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of December over the years 1990-Present", "December", "december"), {period: "december"}, [true, true]);
+    let periodJanuaryContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of January over the years 1991-2020", "January", "january"), {period: "january"}, [true, true]);
+    let periodFebruaryContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of February over the years 1991-2020", "February", "february"), {period: "february"}, [true, true]);
+    let periodMarchContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of March over the years 1991-2020", "March", "march"), {period: "march"}, [true, true]);
+    let periodAprilContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of April over the years 1991-2020", "April", "april"), {period: "april"}, [true, true]);
+    let periodMayContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of May over the years 1991-2020", "May", "may"), {period: "may"}, [true, true]);
+    let periodJuneContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of June over the years 1991-2020", "June", "june"), {period: "june"}, [true, true]);
+    let periodJulyContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of July over the years 1991-2020", "July", "july"), {period: "july"}, [true, true]);
+    let periodAugustContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of August over the years 1991-2020", "August", "august"), {period: "august"}, [true, true]);
+    let periodSeptemberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of September over the years 1991-2020", "September", "september"), {period: "september"}, [true, true]);
+    let periodOctoberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of October over the years 1991-2020", "October", "october"), {period: "october"}, [true, true]);
+    let periodNovemberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of November over the years 1991-2020", "November", "november"), {period: "november"}, [true, true]);
+    let periodDecemberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of December over the years 1991-2020", "December", "december"), {period: "december"}, [true, true]);
 
     let period30yrLegacy = new FormValue(new DisplayData("30 year climatology averaged over the years 1978-2007", "1978-2007", "1978-2007"), {period: "1978-2007"}, [true, true]);
     let period30yrContemporary = new FormValue(new DisplayData("30 year climatology averaged over the years 1991-2020", "1991-2020", "1991-2020"), {period: "1991-2020"}, [true, true]);
