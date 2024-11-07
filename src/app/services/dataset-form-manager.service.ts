@@ -46,19 +46,34 @@ export class DatasetFormManagerService {
     let meanAnnual30 = new FormValue(new DisplayData("Annual maps averaged over a 30 year period", "Mean 30 Year Annual", "mean_30yr_annual"), {mean_type: "mean_30yr_annual"}, [true, true]);
     let meanAnnualDecadal = new FormValue(new DisplayData("Annual maps aggregated over the 2011-2020 decade", "Mean Annual Decadal", "mean_annual_decadal"), {mean_type: "mean_annual_decadal"}, [true, true]);
     //Climatology period
-    let periodJanuary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of January", "January", "january"), {period: "january"}, [true, true]);
-    let periodFebruary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of February", "February", "february"), {period: "february"}, [true, true]);
-    let periodMarch = new FormValue(new DisplayData("Mean rainfall aggregated over the month of March", "March", "march"), {period: "march"}, [true, true]);
-    let periodApril = new FormValue(new DisplayData("Mean rainfall aggregated over the month of April", "April", "april"), {period: "april"}, [true, true]);
-    let periodMay = new FormValue(new DisplayData("Mean rainfall aggregated over the month of May", "May", "may"), {period: "may"}, [true, true]);
-    let periodJune = new FormValue(new DisplayData("Mean rainfall aggregated over the month of June", "June", "june"), {period: "june"}, [true, true]);
-    let periodJuly = new FormValue(new DisplayData("Mean rainfall aggregated over the month of July", "July", "july"), {period: "july"}, [true, true]);
-    let periodAugust = new FormValue(new DisplayData("Mean rainfall aggregated over the month of August", "August", "august"), {period: "august"}, [true, true]);
-    let periodSeptember = new FormValue(new DisplayData("Mean rainfall aggregated over the month of September", "September", "september"), {period: "september"}, [true, true]);
-    let periodOctober = new FormValue(new DisplayData("Mean rainfall aggregated over the month of October", "October", "october"), {period: "october"}, [true, true]);
-    let periodNovember = new FormValue(new DisplayData("Mean rainfall aggregated over the month of November", "November", "november"), {period: "november"}, [true, true]);
-    let periodDecember = new FormValue(new DisplayData("Mean rainfall aggregated over the month of December", "December", "december"), {period: "december"}, [true, true]);
-    let period30yr = new FormValue(new DisplayData("30 year climatology averaged over the years 1991-2020", "1991-2020", "1991-2020"), {period: "1991-2020"}, [true, true]);
+    let periodJanuaryLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of January over the years 1920-2012", "January", "january"), {period: "january"}, [true, true]);
+    let periodFebruaryLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of February over the years 1920-2012", "February", "february"), {period: "february"}, [true, true]);
+    let periodMarchLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of March over the years 1920-2012", "March", "march"), {period: "march"}, [true, true]);
+    let periodAprilLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of April over the years 1920-2012", "April", "april"), {period: "april"}, [true, true]);
+    let periodMayLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of May over the years 1920-2012", "May", "may"), {period: "may"}, [true, true]);
+    let periodJuneLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of June over the years 1920-2012", "June", "june"), {period: "june"}, [true, true]);
+    let periodJulyLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of July over the years 1920-2012", "July", "july"), {period: "july"}, [true, true]);
+    let periodAugustLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of August over the years 1920-2012", "August", "august"), {period: "august"}, [true, true]);
+    let periodSeptemberLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of September over the years 1920-2012", "September", "september"), {period: "september"}, [true, true]);
+    let periodOctoberLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of October over the years 1920-2012", "October", "october"), {period: "october"}, [true, true]);
+    let periodNovemberLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of November over the years 1920-2012", "November", "november"), {period: "november"}, [true, true]);
+    let periodDecemberLegacy = new FormValue(new DisplayData("Mean rainfall aggregated over the month of December over the years 1920-2012", "December", "december"), {period: "december"}, [true, true]);
+
+    let periodJanuaryContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of January over the years 1990-Present", "January", "january"), {period: "january"}, [true, true]);
+    let periodFebruaryContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of February over the years 1990-Present", "February", "february"), {period: "february"}, [true, true]);
+    let periodMarchContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of March over the years 1990-Present", "March", "march"), {period: "march"}, [true, true]);
+    let periodAprilContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of April over the years 1990-Present", "April", "april"), {period: "april"}, [true, true]);
+    let periodMayContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of May over the years 1990-Present", "May", "may"), {period: "may"}, [true, true]);
+    let periodJuneContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of June over the years 1990-Present", "June", "june"), {period: "june"}, [true, true]);
+    let periodJulyContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of July over the years 1990-Present", "July", "july"), {period: "july"}, [true, true]);
+    let periodAugustContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of August over the years 1990-Present", "August", "august"), {period: "august"}, [true, true]);
+    let periodSeptemberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of September over the years 1990-Present", "September", "september"), {period: "september"}, [true, true]);
+    let periodOctoberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of October over the years 1990-Present", "October", "october"), {period: "october"}, [true, true]);
+    let periodNovemberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of November over the years 1990-Present", "November", "november"), {period: "november"}, [true, true]);
+    let periodDecemberContemporary = new FormValue(new DisplayData("Mean rainfall aggregated over the month of December over the years 1990-Present", "December", "december"), {period: "december"}, [true, true]);
+
+    let period30yrLegacy = new FormValue(new DisplayData("30 year climatology averaged over the years 1978-2007", "1978-2007", "1978-2007"), {period: "1978-2007"}, [true, true]);
+    let period30yrContemporary = new FormValue(new DisplayData("30 year climatology averaged over the years 1991-2020", "1991-2020", "1991-2020"), {period: "1991-2020"}, [true, true]);
     let periodDecadal1991 = new FormValue(new DisplayData("Annual maps averaged over the 1991-2000 decade", "1991-2000", "1991-2000"), {period: "1991-2000"}, [true, true]);
     let periodDecadal2001 = new FormValue(new DisplayData("Annual maps averaged over the 2001-2010 decade", "2001-2010", "2001-2010"), {period: "2001-2010"}, [true, true]);
     let periodDecadal2011 = new FormValue(new DisplayData("Annual maps averaged over the 2011-2020 decade", "2011-2020", "2011-2020"), {period: "2011-2020"}, [true, true]);
@@ -162,23 +177,41 @@ export class DatasetFormManagerService {
       meanAnnual30
     ]);
 
-    let climatologyPeriodNode = new FormNode(new DisplayData("The time period over which the data is averaged", "Data Period", "cl_mean"), [
-      periodJanuary,
-      periodFebruary,
-      periodMarch,
-      periodApril,
-      periodMay,
-      periodJune,
-      periodJuly,
-      periodAugust,
-      periodSeptember,
-      periodOctober,
-      periodNovember,
-      periodDecember,
+    let climatologyLegacyPeriodNode = new FormNode(new DisplayData("The time period over which the data is averaged", "Data Period", "cl_mean"), [
+      periodJanuaryLegacy,
+      periodFebruaryLegacy,
+      periodMarchLegacy,
+      periodAprilLegacy,
+      periodMayLegacy,
+      periodJuneLegacy,
+      periodJulyLegacy,
+      periodAugustLegacy,
+      periodSeptemberLegacy,
+      periodOctoberLegacy,
+      periodNovemberLegacy,
+      periodDecemberLegacy,
       periodDecadal1991,
       periodDecadal2001,
       periodDecadal2011,
-      period30yr
+      period30yrLegacy
+    ]);
+    let climatologyContemporaryPeriodNode = new FormNode(new DisplayData("The time period over which the data is averaged", "Data Period", "cl_mean"), [
+      periodJanuaryContemporary,
+      periodFebruaryContemporary,
+      periodMarchContemporary,
+      periodAprilContemporary,
+      periodMayContemporary,
+      periodJuneContemporary,
+      periodJulyContemporary,
+      periodAugustContemporary,
+      periodSeptemberContemporary,
+      periodOctoberContemporary,
+      periodNovemberContemporary,
+      periodDecemberContemporary,
+      periodDecadal1991,
+      periodDecadal2001,
+      periodDecadal2011,
+      period30yrContemporary
     ]);
 
     let extentDisplayData = new DisplayData("The area of coverage for the data.", "Spatial Extent", "extent");
@@ -261,12 +294,12 @@ export class DatasetFormManagerService {
 
     let contemporaryClimatologyFormData = new FormData([
       climatologyMeanTypeNode,
-      climatologyPeriodNode
+      climatologyContemporaryPeriodNode
     ], []);
 
     let legacyClimatologyFormData = new FormData([
       climatologyMeanTypeNode,
-      climatologyPeriodNode
+      climatologyLegacyPeriodNode
     ], []);
 
     let contemporaryClimatologyExportFormData = new FormData([
@@ -306,7 +339,7 @@ export class DatasetFormManagerService {
     let ndviFocusManager = new NDVITimeseriesData(dateNDVIStart, dateNDVIEnd, day16Period, yearPeriod, this.dateHandler, dateNDVIEnd);
     let fireRiskFocusManager = new TimeseriesData(dateFireRiskStart, dateFireRiskEnd, dayPeriod, monthPeriod, this.dateHandler, dateFireRiskEnd);
     let rhFocusManager = new TimeseriesData(dateRHStart, lastDay, dayPeriod, monthPeriod, this.dateHandler, lastDay);
-    let climatologyFocusManager = new TimeSelectorData(climatologyPeriodNode, periodJanuary);
+    let climatologyFocusManager = new TimeSelectorData(climatologyContemporaryPeriodNode, periodJanuaryContemporary);
 
     //cleanup the timeseries refs in model
     //Create Datasets
@@ -445,9 +478,9 @@ export class DatasetFormManagerService {
       mean_type: "mean_30yr_annual",
       cl_mean: "1991-2020"
     });
-    let legacyRainfallClimatology = new VisDatasetItem(false, true, "Millimeters", "mm", "Rainfall", `1991-2020 Mean Rainfall`, [0, 10000], [true, false], climatologyFocusManager, [], false, {
+    let legacyRainfallClimatology = new VisDatasetItem(false, true, "Millimeters", "mm", "Rainfall", `1978-2007 Mean Rainfall`, [0, 10000], [true, false], climatologyFocusManager, [], false, {
       mean_type: "mean_30yr_annual",
-      cl_mean: "1991-2020"
+      cl_mean: "1978-2007"
     });
     contemporaryRainfallClimatologySets.push(contemporaryRainfallClimatology);
     legacyRainfallClimatologySets.push(legacyRainfallClimatology);
@@ -463,17 +496,17 @@ export class DatasetFormManagerService {
       mean_type: "mean_30yr_annual",
       cl_mean: "1991-2020"
     });
-    let legacyMeanTemperatureClimatology = new VisDatasetItem(false, true, "Celcius", "°C", "Mean Temperature", `1991-2020 Mean Temperature`, [-10, 35], [false, false], climatologyFocusManager, [], true, {
+    let legacyMeanTemperatureClimatology = new VisDatasetItem(false, true, "Celcius", "°C", "Mean Temperature", `1978-2007 Mean Temperature`, [-10, 35], [false, false], climatologyFocusManager, [], true, {
       mean_type: "mean_30yr_annual",
-      cl_mean: "1991-2020"
+      cl_mean: "1978-2007"
     });
-    let legacyMaxTemperatureClimatology = new VisDatasetItem(false, true, "Celcius", "°C", "Maximum Temperature", `1991-2020 Maximum Temperature`, [-10, 35], [false, false], climatologyFocusManager, [], true, {
+    let legacyMaxTemperatureClimatology = new VisDatasetItem(false, true, "Celcius", "°C", "Maximum Temperature", `1978-2007 Maximum Temperature`, [-10, 35], [false, false], climatologyFocusManager, [], true, {
       mean_type: "mean_30yr_annual",
-      cl_mean: "1991-2020"
+      cl_mean: "1978-2007"
     });
-    let legacyMinTemperatureClimatology = new VisDatasetItem(false, true, "Celcius", "°C", "Minimum Temperature", `1991-2020 Minimum Temperature`, [-10, 35], [false, false], climatologyFocusManager, [], true, {
+    let legacyMinTemperatureClimatology = new VisDatasetItem(false, true, "Celcius", "°C", "Minimum Temperature", `1978-2007 Minimum Temperature`, [-10, 35], [false, false], climatologyFocusManager, [], true, {
       mean_type: "mean_30yr_annual",
-      cl_mean: "1991-2020"
+      cl_mean: "1978-2007"
     });
     contemporaryMeanTemperatureClimatologySets.push(contemporaryMeanTemperatureClimatology);
     contemporaryMaxTemperatureClimatologySets.push(contemporaryMaxTemperatureClimatology);
@@ -809,9 +842,13 @@ export class DatasetFormManagerService {
     let dsPeriodDynamicalFutureProperty = new FileProperty(dsPeriodDynamicalNode.filter(["late_d"]), ["late_d"]);
     let ndviPeriodProperty = new FileProperty(periodNode.filter(["16day"]), ["16day"]);
 
-    let monthClimatologyProperty = new FileProperty(climatologyPeriodNode.filter(["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]), ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]);
-    let decadalClimatologyProperty = new FileProperty(climatologyPeriodNode.filter(["1991-2000", "2001-2010", "2011-2020"]), ["1991-2000", "2001-2010", "2011-2020"]);
-    let yr30ClimatologyProperty = new FileProperty(climatologyPeriodNode.filter(["1991-2020"]), ["1991-2020"]);
+    let monthLegacyClimatologyProperty = new FileProperty(climatologyLegacyPeriodNode.filter(["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]), ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]);
+    let monthContemporaryClimatologyProperty = new FileProperty(climatologyContemporaryPeriodNode.filter(["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]), ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]);
+
+    let decadalClimatologyProperty = new FileProperty(climatologyContemporaryPeriodNode.filter(["1991-2000", "2001-2010", "2011-2020"]), ["1991-2000", "2001-2010", "2011-2020"]);
+    
+    let yr30LegacyClimatologyProperty = new FileProperty(climatologyLegacyPeriodNode.filter(["1978-2007"]), ["1978-2007"]);
+    let yr30ContemporaryClimatologyProperty = new FileProperty(climatologyContemporaryPeriodNode.filter(["1991-2020"]), ["1991-2020"]);
 
     //package files
     let rainfallMapFile = new FileData(rainfallMapDisplayData, geotiffFtype, ["metadata"]);
@@ -867,16 +904,16 @@ export class DatasetFormManagerService {
 
     let fireRiskMapGroup = new FileGroup(new DisplayData("", "", "ae"), [fireRiskMapFile], [statewideProperty]);
 
-    let contemporaryClimatologyRainfallMonthFileGroup = new FileGroup(new DisplayData("", "", "u"), [contemporaryClimatologyRainfallMapFile], [statewideProperty, monthClimatologyProperty]);
+    let contemporaryClimatologyRainfallMonthFileGroup = new FileGroup(new DisplayData("", "", "u"), [contemporaryClimatologyRainfallMapFile], [statewideProperty, monthContemporaryClimatologyProperty]);
     let contemporaryClimatologyRainfallDecadeFileGroup = new FileGroup(new DisplayData("", "", "v"), [contemporaryClimatologyRainfallMapFile], [statewideProperty, decadalClimatologyProperty]);
-    let contemporaryClimatologyRainfall30yrFileGroup = new FileGroup(new DisplayData("", "", "w"), [contemporaryClimatologyRainfallMapFile], [statewideProperty, yr30ClimatologyProperty]);
-    let contemporaryClimatologyTemperatureMonthFileGroup = new FileGroup(new DisplayData("", "", "x"), [contemporaryClimatologyTemperatureMapFile], [statewideProperty, monthClimatologyProperty]);
+    let contemporaryClimatologyRainfall30yrFileGroup = new FileGroup(new DisplayData("", "", "w"), [contemporaryClimatologyRainfallMapFile], [statewideProperty, yr30ContemporaryClimatologyProperty]);
+    let contemporaryClimatologyTemperatureMonthFileGroup = new FileGroup(new DisplayData("", "", "x"), [contemporaryClimatologyTemperatureMapFile], [statewideProperty, monthContemporaryClimatologyProperty]);
     let contemporaryClimatologyTemperatureDecadeFileGroup = new FileGroup(new DisplayData("", "", "y"), [contemporaryClimatologyTemperatureMapFile], [statewideProperty, decadalClimatologyProperty]);
-    let contemporaryClimatologyTemperature30yrFileGroup = new FileGroup(new DisplayData("", "", "z"), [contemporaryClimatologyTemperatureMapFile], [statewideProperty, yr30ClimatologyProperty]);
-    let legacyClimatologyRainfallMonthFileGroup = new FileGroup(new DisplayData("", "", "aa"), [legacyClimatologyRainfallMapFile, legacyClimatologyMetadataFile], [allExtentProperty, monthClimatologyProperty]);
-    let legacyClimatologyRainfall30yrFileGroup = new FileGroup(new DisplayData("", "", "ab"), [legacyClimatologyRainfallMapFile, legacyClimatologyMetadataFile], [allExtentProperty, yr30ClimatologyProperty]);
-    let legacyClimatologyTemperatureMonthFileGroup = new FileGroup(new DisplayData("", "", "ac"), [legacyClimatologyTemperatureMapFile, legacyClimatologyMetadataFile], [statewideProperty, monthClimatologyProperty]);
-    let legacyClimatologyTemperature30yrFileGroup = new FileGroup(new DisplayData("", "", "ad"), [legacyClimatologyTemperatureMapFile, legacyClimatologyMetadataFile], [statewideProperty, yr30ClimatologyProperty]);
+    let contemporaryClimatologyTemperature30yrFileGroup = new FileGroup(new DisplayData("", "", "z"), [contemporaryClimatologyTemperatureMapFile], [statewideProperty, yr30ContemporaryClimatologyProperty]);
+    let legacyClimatologyRainfallMonthFileGroup = new FileGroup(new DisplayData("", "", "aa"), [legacyClimatologyRainfallMapFile, legacyClimatologyMetadataFile], [allExtentProperty, monthLegacyClimatologyProperty]);
+    let legacyClimatologyRainfall30yrFileGroup = new FileGroup(new DisplayData("", "", "ab"), [legacyClimatologyRainfallMapFile, legacyClimatologyMetadataFile], [allExtentProperty, yr30LegacyClimatologyProperty]);
+    let legacyClimatologyTemperatureMonthFileGroup = new FileGroup(new DisplayData("", "", "ac"), [legacyClimatologyTemperatureMapFile, legacyClimatologyMetadataFile], [statewideProperty, monthLegacyClimatologyProperty]);
+    let legacyClimatologyTemperature30yrFileGroup = new FileGroup(new DisplayData("", "", "ad"), [legacyClimatologyTemperatureMapFile, legacyClimatologyMetadataFile], [statewideProperty, yr30LegacyClimatologyProperty]);
 
     //note these can be combined with the vis timeseries stuff, just need to rework vis timeseries data to use this
     let rainfallMonthTimeseriesHandler = new TimeseriesHandler(date1990, lastMonth, monthPeriod, this.dateHandler);
