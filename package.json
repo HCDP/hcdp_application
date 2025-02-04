@@ -66,7 +66,7 @@
     "material-design-icons": "^3.0.1",
     "moment": "^2.24.0",
     "moment-round": "^1.0.1",
-    "moment-timezone": "^0.5.28",
+    "moment-timezone": "^0.5.46",
     "ng-bootstrap": "^1.6.3",
     "ngx-web-worker": "^8.0.0",
     "patch-package": "^6.4.7",

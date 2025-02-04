@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Moment } from 'moment';
-import { VisDatasetItem, FocusData, FocusManager, FormValue, TimeSelectorData, TimeseriesData } from 'src/app/services/dataset-form-manager.service';
+import { Moment } from "moment-timezone";
+import { VisDatasetItem, FormValue, TimeseriesData } from 'src/app/services/dataset-form-manager.service';
 import { EventParamRegistrarService } from 'src/app/services/inputManager/event-param-registrar.service';
 
 @Component({
@@ -9,21 +9,22 @@ import { EventParamRegistrarService } from 'src/app/services/inputManager/event-
   styleUrls: ['./focus-control.component.scss']
 })
 export class FocusControlComponent implements OnInit {
-  focusManager: FocusManager<unknown>;
+  focusTimeseries: TimeseriesData;
   date: Moment;
+  lastDate: Moment;
   selection: FormValue;
-  lastFocus: FocusData<unknown>;
+  
   datatype: string;
 
   constructor(private paramService: EventParamRegistrarService) {
     paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.dataset, (dataset: VisDatasetItem) => {
       if(dataset) {
         this.datatype = dataset.datatype;
-        this.focusManager = dataset.focusManager;
-        if(this.focusManager.type == "timeseries") {
+        this.focusTimeseries = dataset.timeseriesData;
+        if(this.focusTimeseries) {
           //make sure all dataset events propogate before pushing focus
           setTimeout(() => {
-            this.paramService.pushFocusData(this.lastFocus);
+            this.paramService.pushFocusDate(this.lastDate);
           }, 0);
         }
       }
@@ -33,20 +34,11 @@ export class FocusControlComponent implements OnInit {
   ngOnInit() {
   }
 
-  castTimeseriesManager(): TimeseriesData {
-    return <TimeseriesData>this.focusManager;
-  }
-
-  castSelectorManager(): TimeSelectorData {
-    return <TimeSelectorData>this.focusManager;
-  }
-
-  setFocus(focus: unknown) {
-    if(this.focusManager.type == "timeseries") {
-      this.date = <Moment>focus;
-      let focusData = this.focusManager.getFocusData(focus);
-      this.lastFocus = focusData;
-      this.paramService.pushFocusData(focusData);
+  setFocus(focus: Moment) {
+    if(this.focusTimeseries) {
+      this.date = focus;
+      this.lastDate = focus;
+      this.paramService.pushFocusDate(focus);
     }
     
   }

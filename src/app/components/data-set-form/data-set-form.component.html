@@ -101,6 +101,13 @@
       </div>
     </ng-template>
 
+    <div class="warning" *ngIf="this.controls.datatype.value == 'ignition_probability'">
+      <div class="warning-header">
+        <b>Caution</b> <i class="material-icons">warning_amber</i>
+      </div>
+      The ignition probability product shows the daily probability of large (8+ acre) fire ignitions based on current and past climate. <b>High probability does not guarantee a fire, and low probability does not rule one out</b>. Consult local fire officials for hazard and risk guidance. The authors bear no responsibility for the quality of results and their application. Hence, the authors cannot be held liable for any errors, damages, or unintended consequences that may arise from the application of this material.  See data use <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="blank">Attribution-NonCommercial-NoDerivatives 4.0 International License</a>
+    </div>
+
     <button mat-raised-button color="primary" (click)="updateDataset()">
       Submit
     </button>

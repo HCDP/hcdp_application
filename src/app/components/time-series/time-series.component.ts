@@ -1,9 +1,9 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { SiteInfo } from 'src/app/models/SiteMetadata';
-import Moment from "moment";
+import { Moment } from "moment-timezone";
 import { EventParamRegistrarService, LoadingData } from 'src/app/services/inputManager/event-param-registrar.service';
 import { Subject } from 'rxjs';
-import { VisDatasetItem, FocusData } from 'src/app/services/dataset-form-manager.service';
+import { VisDatasetItem } from 'src/app/services/dataset-form-manager.service';
 import { MapLocation } from 'src/app/models/Stations';
 import { TimeseriesGraphData } from '../rainfall-graph/rainfall-graph.component';
 
@@ -21,7 +21,7 @@ export class TimeSeriesComponent implements OnInit {
 
   selected: SiteInfo;
   source: Subject<TimeseriesGraphData>;
-  date: Moment.Moment;
+  date: Moment;
   axisLabel: string;
 
   constructor(private paramService: EventParamRegistrarService) {
@@ -39,10 +39,10 @@ export class TimeSeriesComponent implements OnInit {
         this.source.next(data);
       }
     });
-    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.focusData, (focus: FocusData<unknown>) => {
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.focusDate, (focus: Moment) => {
       //should only handle if timeseries type
-      if(focus?.type == "timeseries") {
-        this.date = <Moment.Moment>focus.data;
+      if(focus) {
+        this.date = focus;
       }
     });
     paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.dataset, (dataset: VisDatasetItem) => {

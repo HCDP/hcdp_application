@@ -1,6 +1,6 @@
-<div *ngIf="focusManager">
+<div *ngIf="focusTimeseries">
   <app-date-focus
-    [timeseriesData]="castTimeseriesManager()"
+    [timeseriesData]="focusTimeseries"
     [initValue]="date"
     (dateChange)="setFocus($event)">
   </app-date-focus>

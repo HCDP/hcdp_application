@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, Input, ViewChildren, QueryList } from '@angular/core';
 import {EventParamRegistrarService} from "../../services/inputManager/event-param-registrar.service";
 import { FormControl } from '@angular/forms';
-import { ActiveFormData, DatasetFormManagerService, DatasetSelectorGroup, FocusData, FormManager, FormNode, FormValue, VisDatasetItem } from 'src/app/services/dataset-form-manager.service';
+import { ActiveFormData, DatasetFormManagerService, DatasetSelectorGroup, FormManager, FormNode, FormValue, VisDatasetItem } from 'src/app/services/dataset-form-manager.service';
 import { StringMap } from '@angular/compiler/src/compiler_facade_interface';
 import { MatTabGroup } from '@angular/material/tabs';
 
@@ -12,7 +12,7 @@ import { MatTabGroup } from '@angular/material/tabs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DataSetFormComponent implements OnInit, AfterViewInit {
-  private static readonly FORM_ORDER = ["historical_rainfall", "historical_temperature", "rh", "ndvi", /*"fire_risk",*/ "downscaled", "contemporary_climatology", "legacy_climatology"];
+  private static readonly FORM_ORDER = ["historical_rainfall", "historical_temperature", "rh", "ndvi", "ignition_probability", "downscaled", "contemporary_climatology", "legacy_climatology"];
 
   datasetData: DatasetData[];
 
@@ -196,12 +196,10 @@ export class DataSetFormComponent implements OnInit, AfterViewInit {
           this.updateOptionData();
         });
       }
-      let focusData = new FocusData("selector", undefined, this.dataset.optionData.paramData, this.dataset.optionData);
-      this.paramService.pushFocusData(focusData);
+      this.paramService.pushOptions(this.dataset.optionData.paramData);
     }
-    else if(this.dataset.focusManager.type == "selector") {
-      let focusData = new FocusData("selector", undefined, {}, null);
-      this.paramService.pushFocusData(focusData);
+    else if(!this.dataset.timeseriesData) {
+    this.paramService.pushOptions({});
       this.optionNodes = [];
     }
     else {

@@ -3,9 +3,11 @@ import { ParameterStoreService, ParameterHook } from "./auxillary/parameter-stor
 import { BehaviorSubject, Observable } from 'rxjs';
 import { RasterData } from 'src/app/models/RasterData';
 import { ColorScale } from 'src/app/models/colorScale';
-import { VisDatasetItem, FocusData } from '../dataset-form-manager.service';
+import { VisDatasetItem } from '../dataset-form-manager.service';
 import { MapLocation, Station, StationMetadata } from 'src/app/models/Stations';
 import { TimeseriesGraphData } from 'src/app/components/rainfall-graph/rainfall-graph.component';
+import { Moment } from "moment-timezone";
+import { StringMap } from 'src/app/models/types';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +18,7 @@ export class EventParamRegistrarService {
     raster: "raster",
     stations: "stations",
     filteredStations: "filteredStations",
-    focusData: "focus",
+    focusDate: "focusDate",
     dataset: "dataset",
     timeseries: "timeseries",
     loading: "loading",
@@ -24,7 +26,8 @@ export class EventParamRegistrarService {
     colorScale: "colorScale",
     viewType: "viewType",
     selectedLocation: "location",
-    metadata: "metadata"
+    metadata: "metadata",
+    options: "options"
   };
 
   private metadataSource: BehaviorSubject<StationMetadata[]>;
@@ -34,11 +37,12 @@ export class EventParamRegistrarService {
   private stationsSource: BehaviorSubject<Station[]>;
   private filteredStationsSource: BehaviorSubject<Station[]>;
   private timeseriesSource: BehaviorSubject<TimeseriesGraphData>;
-  private focusDataSource: BehaviorSubject<FocusData<unknown>>;
+  private focusDateSource: BehaviorSubject<Moment>;
   private loadingSource: BehaviorSubject<LoadingData>;
   private mapBoundsSource: BehaviorSubject<L.LatLngBounds>;
   private colorScaleSource: BehaviorSubject<ColorScale>;
   private viewTypeSource: BehaviorSubject<string>;
+  private optionsSource: BehaviorSubject<StringMap>;
   private tagGen: UniqueTagID;
 
   constructor(private paramService: ParameterStoreService) {
@@ -49,13 +53,14 @@ export class EventParamRegistrarService {
     this.stationsSource = this.paramService.registerParameter<Station[]>(EventParamRegistrarService.EVENT_TAGS.stations);
     this.filteredStationsSource = this.paramService.registerParameter<Station[]>(EventParamRegistrarService.EVENT_TAGS.filteredStations);
     this.timeseriesSource = this.paramService.registerParameter<TimeseriesGraphData>(EventParamRegistrarService.EVENT_TAGS.timeseries);
-    this.focusDataSource = this.paramService.registerParameter<FocusData<unknown>>(EventParamRegistrarService.EVENT_TAGS.focusData);
+    this.focusDateSource = this.paramService.registerParameter<Moment>(EventParamRegistrarService.EVENT_TAGS.focusDate);
     this.loadingSource = this.paramService.registerParameter<LoadingData>(EventParamRegistrarService.EVENT_TAGS.loading);
     this.mapBoundsSource = this.paramService.registerParameter<L.LatLngBounds>(EventParamRegistrarService.EVENT_TAGS.mapBounds);
     this.colorScaleSource = this.paramService.registerParameter<ColorScale>(EventParamRegistrarService.EVENT_TAGS.colorScale);
     this.viewTypeSource = this.paramService.registerParameter<string>(EventParamRegistrarService.EVENT_TAGS.viewType);
     this.selectedLocationSource = this.paramService.registerParameter<MapLocation>(EventParamRegistrarService.EVENT_TAGS.selectedLocation);
     this.metadataSource = this.paramService.registerParameter<StationMetadata[]>(EventParamRegistrarService.EVENT_TAGS.metadata);
+    this.optionsSource = this.paramService.registerParameter<StringMap>(EventParamRegistrarService.EVENT_TAGS.options);
   }
 
   pushDataset(dataset: VisDatasetItem): void {
@@ -82,8 +87,8 @@ export class EventParamRegistrarService {
     this.timeseriesSource.next(seriesData);
   }
 
-  pushFocusData(data: FocusData<unknown>): void {
-    this.focusDataSource.next(data);
+  pushFocusDate(date: Moment): void {
+    this.focusDateSource.next(date);
   }
 
   pushLoading(loading: LoadingData): void {
@@ -104,6 +109,10 @@ export class EventParamRegistrarService {
 
   pushMetadata(metadata: StationMetadata[]) {
     this.metadataSource.next(metadata);
+  }
+
+  pushOptions(options: StringMap) {
+    this.optionsSource.next(options);
   }
 
   //can this be integrated with the rest of the stuff?

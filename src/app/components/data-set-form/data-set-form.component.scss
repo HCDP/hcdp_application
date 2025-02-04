@@ -27,7 +27,35 @@ p {
 }
 
 
+.warning {
+  background-color: yellow;
+  padding: 20px;
+  border-radius: 10px;
+  border-width: 2px;
+  border-style: solid;
+  margin-bottom: 20px;
+  font-size: large;
+  opacity: 1;
+	animation-name: fadeInOpacity;
+	animation-iteration-count: 1;
+	animation-timing-function: ease-in;
+	animation-duration: .75s;
+}
+@keyframes fadeInOpacity {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
 
+.warning-header {
+  display: flex;
+  padding-bottom: 10px;
+  width: 100%;
+  align-items: center;
+}
 
 .spacer {
   height: 10px;

@@ -3,7 +3,7 @@ import {MAT_DATE_FORMATS} from '@angular/material/core';
 import {DateFormatHelperService, DateUnit} from "../../../services/controlHelpers/date-format-helper.service";
 import {FormControl} from '@angular/forms';
 import {MatCalendarHeader} from "@angular/material/datepicker";
-import Moment from "moment";
+import Moment from "moment-timezone";
 
 export let dateFormatFactory = (formatHelper: DateFormatHelperService) => {
   return formatHelper.getDateFormat();

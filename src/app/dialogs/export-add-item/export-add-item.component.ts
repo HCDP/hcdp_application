@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, Inject, QueryList, ViewChild, Vie
 import { FormControl } from '@angular/forms';
 import { MatTabGroup } from '@angular/material';
 import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
-import { Moment } from 'moment';
+import { Moment } from "moment-timezone";
 import { Subscription } from 'rxjs';
 import { StringMap } from 'src/app/models/types';
 import { ActiveFormData, DatasetFormManagerService, ExportDatasetItem, FormManager, FileProperty, FileData, UnitOfTime, DatasetSelectorGroup, FormValue } from 'src/app/services/dataset-form-manager.service';
@@ -14,7 +14,7 @@ import { DateManagerService } from 'src/app/services/dateManager/date-manager.se
   styleUrls: ['./export-add-item.component.scss']
 })
 export class ExportAddItemComponent implements AfterViewInit {
-  private static readonly FORM_ORDER = ["historical_rainfall", "historical_temperature", "rh", "ndvi", /*"fire_risk",*/ "downscaled", "contemporary_climatology", "legacy_climatology"];
+  private static readonly FORM_ORDER = ["historical_rainfall", "historical_temperature", "rh", "ndvi", "ignition_probability", "downscaled", "contemporary_climatology", "legacy_climatology"];
 
   @ViewChild("t1", {static: false}) t1: MatTabGroup;
   @ViewChildren("t2") t2: QueryList<MatTabGroup>;
@@ -30,6 +30,7 @@ export class ExportAddItemComponent implements AfterViewInit {
   private initTabs: number[][];
 
   numSelected: number;
+  datatype: string;
 
   constructor(public dialogRef: MatDialogRef<ExportAddItemComponent>, @Inject(MAT_DIALOG_DATA) public data: FormState, private dateManager: DateManagerService, private formService: DatasetFormManagerService) {
     //reset the state on close, can remove this if want to save when closing form, probably want it to reset to a default
@@ -51,9 +52,10 @@ export class ExportAddItemComponent implements AfterViewInit {
           this.t2.toArray()[groupIndex].selectedIndex = t2i;
         }
         setTimeout(() => {
-            this.initTabs = undefined;
+          this.initTabs = undefined;
         }, 400);
       }
+      this.datatype = this.formData.values.datatype;
     }, 400);
     
   }
@@ -161,6 +163,7 @@ export class ExportAddItemComponent implements AfterViewInit {
       }
     }
     let {datatype, ...values} = formData.values;
+    this.datatype = datatype;
     //unsubscribe from controls so new ones can be created
     this.cleanupControlSubscriptions();
     this.setupDatasetControls(values);
@@ -349,14 +352,14 @@ export class ExportAddItemComponent implements AfterViewInit {
       exportData.state.dates = {
         start: this.controls.dates.start,
         end: this.controls.dates.end,
-        unit: this.formData.datasetItem.timeseriesHandler.unit,
-        interval: this.formData.datasetItem.timeseriesHandler.interval
+        unit: this.formData.datasetItem.timeseriesData.unit,
+        interval: this.formData.datasetItem.timeseriesData.interval
       };
     }
     let fileLabels = [];
     let datasetLabel = `${this.formData.datasetItem.label}`;
-    if(this.formData.datasetItem.timeseriesHandler) {
-      datasetLabel += ` ${this.formData.datasetItem.timeseriesHandler.getLabel(this.controls.dates.start)} - ${this.formData.datasetItem.timeseriesHandler.getLabel(this.controls.dates.end)}`;
+    if(this.formData.datasetItem.timeseriesData) {
+      datasetLabel += ` ${this.formData.datasetItem.timeseriesData.getLabel(this.controls.dates.start)} - ${this.formData.datasetItem.timeseriesData.getLabel(this.controls.dates.end)}`;
     }
     exportData.labels.dataset = datasetLabel;
     for(let field in this.controls.dataset) {

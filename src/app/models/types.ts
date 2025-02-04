@@ -1,5 +1,3 @@
-import { Moment } from "moment";
-
 export type StringMap = {[item: string]: string};
 //export type SingletTypeMap = {[item: string]: string | number | boolean};
 

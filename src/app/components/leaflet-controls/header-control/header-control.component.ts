@@ -1,6 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { Map, DomUtil, Control } from "leaflet";
-import { Moment } from 'moment';
+import { Map, DomUtil } from "leaflet";
 
 @Component({
   selector: 'app-header-control',

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as Moment from 'moment';
+import * as Moment from "moment-timezone";
 import { UnitOfTime } from '../dataset-form-manager.service';
 
 @Injectable({

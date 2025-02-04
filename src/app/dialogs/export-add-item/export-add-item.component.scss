@@ -1,10 +1,40 @@
+.warning {
+  background-color: yellow;
+  padding: 20px;
+  border-radius: 10px;
+  border-width: 2px;
+  border-style: solid;
+  margin-bottom: 20px;
+  font-size: large;
+  opacity: 1;
+	animation-name: fadeInOpacity;
+	animation-iteration-count: 1;
+	animation-timing-function: ease-in;
+	animation-duration: .75s;
+}
+@keyframes fadeInOpacity {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+.warning-header {
+  display: flex;
+  padding-bottom: 10px;
+  width: 100%;
+  align-items: center;
+}
+
 .container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    font-family: Roboto;
-  }
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  font-family: Roboto;
+}
 
 .downscale {
   transform: scale(.9);
@@ -80,38 +110,10 @@ p {
   padding-right: 20px;
 }
 
-
-// .control-subgroup {
-//   padding-left: 20px;
-//   width: 400px;
-//   background-color: #175db6;
-//   color: white;
-//   padding: 10px;
-//   border-radius: 10px;
-// }
-
-// .control-group {
-//   padding-top: 20px;
-// }
-
 .spacer {
   height: 20px;
   clear: both;
 }
-
-//   h4 {
-//     font-weight: 500;
-//     margin-bottom: 5px;
-//   }
-
-
-
-
-// .control-subgroup h4 {
-//     margin-top: 0;
-//     margin-bottom: 10px;
-//     font-weight: 500;
-// }
 
 .file-tile {
     padding-bottom: 10px;

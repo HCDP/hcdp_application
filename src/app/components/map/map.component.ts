@@ -10,9 +10,10 @@ import { RasterData } from 'src/app/models/RasterData.js';
 import { RoseControlOptions } from '../leaflet-controls/leaflet-compass-rose/leaflet-compass-rose.component';
 import { LeafletLayerControlExtensionComponent } from '../leaflet-controls/leaflet-layer-control-extension/leaflet-layer-control-extension.component';
 import { AssetManagerService } from 'src/app/services/util/asset-manager.service';
-import { VisDatasetItem, FocusData } from 'src/app/services/dataset-form-manager.service';
+import { VisDatasetItem } from 'src/app/services/dataset-form-manager.service';
 import { DataManagerService } from 'src/app/services/dataManager/data-manager.service';
 import { MapLocation, Station, V_Station } from 'src/app/models/Stations';
+import { Moment } from "moment-timezone";
 
 @Component({
   selector: 'app-map',
@@ -197,13 +198,13 @@ export class MapComponent implements OnInit {
       data: {
         stations: null,
         raster: null,
-        focus: null
+        dateLabel: null
       },
       band: "0",
     };
 
-    this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.focusData, (focus: FocusData<unknown>) => {
-      this.active.data.focus = focus;
+    this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.focusDate, (focus: Moment) => {
+      this.active.data.dateLabel = this.dataset?.timeseriesData?.getLabel(focus);
     });
 
     this.initMarkerInfo();
@@ -269,6 +270,7 @@ export class MapComponent implements OnInit {
     this.layerController.addLayers(this.baseLayers);
 
     this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.dataset, (dataset: VisDatasetItem) => {
+      this.active.data.dateLabel = null;
       this.dataset = dataset;
     });
 
@@ -344,7 +346,7 @@ export class MapComponent implements OnInit {
   isExperimental() {
     let experimental = false;
     if(this.dataset && !this.loading) {
-      experimental = this.dataset.rasterParams.datatype == "rainfall" && this.dataset.rasterParams.period == "day" && this.active.data.raster.getBands()["0"].size > 0;
+      experimental = ["rainfall", "ignition_probability"].includes(this.dataset.rasterParams.datatype)  && this.dataset.rasterParams.period == "day" && this.active.data.raster.getBands()["0"].size > 0;
     }
     return experimental;
   }
@@ -726,7 +728,7 @@ interface ActiveData {
 interface DataPack {
   stations: Station[],
   raster: RasterData,
-  focus: FocusData<unknown>
+  dateLabel: string
 }
 
 interface HoverData {

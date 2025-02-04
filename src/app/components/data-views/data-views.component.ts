@@ -38,7 +38,7 @@ export class DataViewsComponent implements OnInit {
       this.selected = location;
     });
 
-    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.focusData, () => {
+    paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.focusDate, () => {
       this.loading = true;
     });
   }

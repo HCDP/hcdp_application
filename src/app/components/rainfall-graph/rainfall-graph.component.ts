@@ -1,9 +1,9 @@
 import { Component, OnInit, Input } from '@angular/core';
-import Moment from 'moment';
+import Moment from "moment-timezone";
 import { DateManagerService } from 'src/app/services/dateManager/date-manager.service';
 import { Observable } from 'rxjs';
 import { MapLocation, Station, V_Station } from 'src/app/models/Stations';
-import { TimeseriesData, UnitOfTime } from 'src/app/services/dataset-form-manager.service';
+import { TimeseriesData } from 'src/app/services/dataset-form-manager.service';
 import { CsvGenService } from 'src/app/services/export/csv-gen.service';
 
 @Component({

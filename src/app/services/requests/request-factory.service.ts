@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { RequestService, RequestResults, ReqPriority } from "./request.service";
 import { RasterData } from '../../models/RasterData';
 import { DataProcessorService } from "../dataProcessor/data-processor.service";
-import moment from 'moment';
+import moment from "moment-timezone";
 import { MapLocation } from 'src/app/models/Stations';
 import { TimeseriesGraphData } from 'src/app/components/rainfall-graph/rainfall-graph.component';
 import { TimeseriesData } from '../dataset-form-manager.service';
@@ -118,6 +118,12 @@ export class RequestFactoryService {
       }
       return transformed;
     });
+    return response;
+  }
+
+
+  async getDatasetDateRange(dataset: any): Promise<RequestResults> {
+    let response = await this.reqService.get(RequestFactoryService.API_KEYS.hcdp, "/datasets/date/range", "json", ReqPriority.HIGH, dataset);
     return response;
   }
 

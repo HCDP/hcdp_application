@@ -5,7 +5,7 @@ import { retry, catchError } from 'rxjs/operators';
 import { Observable, Subject, throwError } from "rxjs";
 import { ResourceReq } from 'src/app/models/exportData';
 import { UnitOfTime } from '../dataset-form-manager.service';
-import { Moment } from 'moment';
+import { Moment } from "moment-timezone";
 
 @Injectable({
   providedIn: 'root'

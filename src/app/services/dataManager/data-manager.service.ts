@@ -5,9 +5,11 @@ import { RequestResults, RequestReject } from "../requests/request.service";
 import {EventParamRegistrarService} from "../inputManager/event-param-registrar.service";
 import { ErrorPopupService } from '../errorHandling/error-popup.service';
 import { DateManagerService } from '../dateManager/date-manager.service';
-import { FocusData, TimeseriesData, UnitOfTime, VisDatasetItem } from '../dataset-form-manager.service';
+import { TimeseriesData, VisDatasetItem } from '../dataset-form-manager.service';
 import { MapLocation, Station, StationMetadata, V_Station } from 'src/app/models/Stations';
 import { TimeseriesGraphData } from 'src/app/components/rainfall-graph/rainfall-graph.component';
+import { Moment } from 'moment-timezone';
+import { StringMap } from 'src/app/models/types';
 
 
 @Injectable({
@@ -46,7 +48,7 @@ export class DataManagerService {
       });
     }, 0);
 
-    for(let timeseriesData of this.dataset.timeseriesData) {
+    for(let timeseriesData of this.dataset.timeseriesSet) {
       const start = timeseriesData.start;
       const end = timeseriesData.end;
       //go backwards so newer data loaded first
@@ -151,121 +153,133 @@ export class DataManagerService {
       this.paramService.pushSelectedLocation(null);
     });
 
-
     let stationRes: RequestResults = null;
     let rasterRes: RequestResults = null;
-    this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.focusData, async (focus: FocusData<unknown>) => {
-      if(focus) {
-        if(stationRes) {
-          stationRes.cancel();
-        }
-        if(rasterRes) {
-          rasterRes.cancel();
-        }
 
-        const { includeStations, includeRaster, rasterParams, stationParams, units, unitsShort } = this.dataset;
+    let updateData = async (additionalParams: StringMap) => {
+      if(stationRes) {
+        stationRes.cancel();
+      }
+      if(rasterRes) {
+        rasterRes.cancel();
+      }
 
+      const { includeStations, includeRaster, rasterParams, stationParams, units, unitsShort } = this.dataset;
+
+      this.paramService.pushLoading({
+        tag: "vis",
+        loading: true
+      });
+
+      let stationPromise = null;
+      let rasterPromise = null;
+      //if station data is available request station data, otherwise just send null
+      if(includeStations) {
+        let properties = {
+          ...additionalParams,
+          ...stationParams
+        };
+        stationRes = await this.reqFactory.getStationData(properties);
+        //transform by combining with station data
+        stationRes.transformData((stationVals: any[]) => {
+          //get metadata
+          return metadataReq.toPromise()
+          .then((metadataMap: {[id: string]: StationMetadata}) => {
+            let stations: Station[] = stationVals.reduce((acc: Station[], stationVal: any) => {
+              let stationId = stationVal.station_id;
+              //yay for inconsistent data
+              let standardizedStationId = this.getStandardizedNumericString(stationId);
+              let stationValue = stationVal.value;
+              let stationMetadata = metadataMap[standardizedStationId];
+              if(stationMetadata) {
+                let station = new Station(stationValue, stationId, units, unitsShort, stationMetadata);
+                acc.push(station);
+              }
+              else {
+                console.error(`Could not find metadata for station, station ID: ${stationId}.`);
+              }
+              return acc;
+            }, []);
+            return stations;
+          })
+          .catch((reason: RequestReject) => {
+            if(!reason.cancelled) {
+              console.error(reason);
+              this.errorPop.notify("error", `Could not retreive station metadata.`);
+              return [];
+            }
+          });
+        });
+        stationPromise = stationRes.toPromise();
+      }
+      else {
+        stationPromise = Promise.resolve(null);
+      }
+      //if raster data is available request raster data, otherwise just send null
+      if(includeRaster) {
+        let properties = {
+          returnEmptyNotFound: true,
+          extent: "statewide",
+          ...additionalParams,
+          ...rasterParams
+        }
+        rasterRes = await this.reqFactory.getRaster(properties);
+        rasterPromise = rasterRes.toPromise();
+      }
+      else {
+        rasterPromise = Promise.resolve(null);
+      }
+      let promises: [Promise<Station[]>, Promise<RasterData>] = [stationPromise, rasterPromise];
+
+      //don't have to wait to set data for each
+      promises[0].then((stationData: Station[]) => {
+        this.paramService.pushStations(stationData);
+      })
+      .catch((reason: RequestReject) => {
+        if(!reason.cancelled) {
+          console.error(reason.reason);
+          this.errorPop.notify("error", `Could not retreive station data.`);
+          this.paramService.pushStations(null);
+        }
+      });
+
+      promises[1].then((raster: RasterData) => {
+        this.paramService.pushRaster(raster);
+      })
+      .catch((reason: RequestReject) => {
+        if(!reason.cancelled) {
+          console.error(reason.reason);
+          this.errorPop.notify("error", `Could not retreive raster data.`);
+          this.paramService.pushRaster(null);
+        }
+      });
+      //when both done send loading complete signal
+      Promise.allSettled(promises).finally(() => {
         this.paramService.pushLoading({
           tag: "vis",
-          loading: true
+          loading: false
         });
+      });
+    }
 
-        let stationPromise = null;
-        let rasterPromise = null;
-        //if station data is available request station data, otherwise just send null
-        if(includeStations) {
-          let properties = {
-            ...focus.paramData,
-            ...stationParams
-          };
-          stationRes = await this.reqFactory.getStationData(properties);
-          //transform by combining with station data
-          stationRes.transformData((stationVals: any[]) => {
-            //get metadata
-            return metadataReq.toPromise()
-            .then((metadataMap: {[id: string]: StationMetadata}) => {
-              let stations: Station[] = stationVals.reduce((acc: Station[], stationVal: any) => {
-                let stationId = stationVal.station_id;
-                //yay for inconsistent data
-                let standardizedStationId = this.getStandardizedNumericString(stationId);
-                let stationValue = stationVal.value;
-                let stationMetadata = metadataMap[standardizedStationId];
-                if(stationMetadata) {
-                  let station = new Station(stationValue, stationId, units, unitsShort, stationMetadata);
-                  acc.push(station);
-                }
-                else {
-                  console.error(`Could not find metadata for station, station ID: ${stationId}.`);
-                }
-                return acc;
-              }, []);
-              return stations;
-            })
-            .catch((reason: RequestReject) => {
-              if(!reason.cancelled) {
-                console.error(reason);
-                this.errorPop.notify("error", `Could not retreive station metadata.`);
-                return [];
-              }
-            });
-          });
-          stationPromise = stationRes.toPromise();
-        }
-        else {
-          stationPromise = Promise.resolve(null);
-        }
-        //if raster data is available request raster data, otherwise just send null
-        if(includeRaster) {
-          let properties = {
-            returnEmptyNotFound: true,
-            extent: "statewide",
-            ...focus.paramData,
-            ...rasterParams
-          }
-          rasterRes = await this.reqFactory.getRaster(properties);
-          rasterPromise = rasterRes.toPromise();
-        }
-        else {
-          rasterPromise = Promise.resolve(null);
-        }
-        let promises: [Promise<Station[]>, Promise<RasterData>] = [stationPromise, rasterPromise];
-
-        //don't have to wait to set data for each
-        promises[0].then((stationData: Station[]) => {
-          this.paramService.pushStations(stationData);
-        })
-        .catch((reason: RequestReject) => {
-          if(!reason.cancelled) {
-            console.error(reason.reason);
-            this.errorPop.notify("error", `Could not retreive station data.`);
-            this.paramService.pushStations(null);
-          }
+    //only works if focus date and options are mutually exclusive, want to combine if not, fine for now
+    this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.focusDate, async (focus: Moment) => {
+      if(focus) {
+        updateData({
+          date: this.dataset.timeseriesData.getLabel(focus, false)
         });
-
-        promises[1].then((raster: RasterData) => {
-          this.paramService.pushRaster(raster);
-        })
-        .catch((reason: RequestReject) => {
-          if(!reason.cancelled) {
-            console.error(reason.reason);
-            this.errorPop.notify("error", `Could not retreive raster data.`);
-            this.paramService.pushRaster(null);
-          }
-        });
-        //when both done send loading complete signal
-        Promise.allSettled(promises).finally(() => {
-          this.paramService.pushLoading({
-            tag: "vis",
-            loading: false
-          });
-        });
+      }
+    });
+    this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.options, async (options: StringMap) => {
+      if(options) {
+        updateData(options);
       }
     });
 
 
     //track selected station and emit series data based on
     this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.selectedLocation, (location: MapLocation) => {
-      if(location && this.dataset.focusManager.type == "timeseries") {
+      if(location && this.dataset.timeseriesData) {
         switch(location.type) {
           case "station": {
             this.selectStation(<Station>location);

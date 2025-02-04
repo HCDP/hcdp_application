@@ -1,6 +1,6 @@
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Component, OnInit, ViewChild, ElementRef, HostListener, Input } from '@angular/core';
-import moment, { Moment } from 'moment';
+import moment, { Moment } from "moment-timezone";
 import { VisDatasetItem } from 'src/app/services/dataset-form-manager.service';
 import { EventParamRegistrarService } from 'src/app/services/inputManager/event-param-registrar.service';
 
@@ -106,7 +106,7 @@ export class ViewContainerComponent implements OnInit {
 
     this.paramService.createParameterHook(EventParamRegistrarService.EVENT_TAGS.dataset, (dataset: VisDatasetItem) => {
       if(dataset) {
-        this.hasTimeseries = dataset.focusManager.type == "timeseries";
+        this.hasTimeseries = dataset.timeseriesData !== null;
         setTimeout(() => {
           this.navInfo = [defaultActive, {
             label: "Locations",
