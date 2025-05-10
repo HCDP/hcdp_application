@@ -83,6 +83,20 @@ export class DatasetFormManagerService {
     let periodDryContemporary = new FormValue(new DisplayData("Average values aggregated over the dry season (May to October) over the years 1991-2020", "Dry Season", "dry"), {period: "dry"}, [true, true]);
     let periodWetContemporary = new FormValue(new DisplayData("Average values aggregated over the wet season (November to April) over the years 1991-2020", "Wet Season", "wet"), {period: "wet"}, [true, true]);
 
+    //leads
+    let lead00 = new FormValue(new DisplayData("Computed estimate values for the current date", "Lead 0", "lead00"), {
+      lead: "lead00"
+    }, [true, true]);
+    let leadDay01 = new FormValue(new DisplayData("Predicted values for the current date +1 day", "Lead 1", "lead01"), {
+      lead: "lead01"
+    }, [true, true]);
+    let leadDay02 = new FormValue(new DisplayData("Predicted values for the current date +2 days", "Lead 2", "lead02"), {
+      lead: "lead02"
+    }, [true, true]);
+    let leadDay03 = new FormValue(new DisplayData("Predicted values for the current date +3 days", "Lead 3", "lead03"), {
+      lead: "lead03"
+    }, [true, true]);
+
     ////values
     //////spatial extents
     let statewideSpatialExtent = new FormValue(new DisplayData("Data covering the entire state of Hawaiʻi.", "Statewide", "statewide"), {
@@ -119,7 +133,6 @@ export class DatasetFormManagerService {
     let percentUnits = new FormValue(new DisplayData("Percent change", "%", "percent"), {
       units: "percent"
     }, null);
-
 
     let percentChangeView = new FormValue(new DisplayData("Percent change in value relative to present day conditions.", "Percent change", "percent"), {
       type: "percent"
@@ -219,7 +232,9 @@ export class DatasetFormManagerService {
     ]);
 
     let extentDisplayData = new DisplayData("The area of coverage for the data.", "Spatial Extent", "extent");
+    let leadDisplayData = new DisplayData("The lead time for future condition predictions. Lead time 0 represents the computed data for the given date using emperical data. Higher lead times indicate future predictions from the date with the lead number indicating the number of periods after the date being predicted. These are predictions made on the current date and may not exactly mirror the computed values for the date being predicted", "Prediction Lead Time", "lead");
     let unitsDisplayData = new DisplayData("The units the data are represented in.", "Units", "units");
+
     let extentNode = new FormNode(extentDisplayData, [statewideSpatialExtent, hawaiiSpatialExtent, mauiSpatialExtent, honoluluSpatialExtent, kauaiSpatialExtent]);
     let rfUnitsNode = new FormNode(unitsDisplayData, [mmUnits, inUnits, percentUnits]);
     let tempUnitsNode = new FormNode(unitsDisplayData, [cUnits, fUnits]);
@@ -227,6 +242,7 @@ export class DatasetFormManagerService {
     let rfdsUnitsNode = new FormNode(unitsDisplayData, [mmUnits, inUnits]);
     let tempdsUnitsNode = new FormNode(unitsDisplayData, [cUnits, fUnits]);
     //let percentUnitsNode = new FormNode(unitsDisplayData, [percentUnits]);
+    let leadNode = new FormNode(leadDisplayData, [lead00, leadDay01, leadDay02, leadDay03], lead00);
 
     let rfdsMap = {
       percent: null,
@@ -288,7 +304,8 @@ export class DatasetFormManagerService {
       periodNode
     ], []);
     let ignitionProbFormData = new FormData([
-      periodNode
+      periodNode,
+      leadNode
     ], []);
     let rhFormData = new FormData([
       periodNode
@@ -696,8 +713,21 @@ export class DatasetFormManagerService {
     }, null, this.requestFactory);
 
     //ignition probability
-    let ignitionProbDay = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Ignition Probability", [0, 1], [true, true], ignitionProbTimeseriesData, [ignitionProbTimeseriesData], true, {
-      period: "day"
+    let ignitionProbDayLead00 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Ignition Probability", [0, 1], [true, true], ignitionProbTimeseriesData, [ignitionProbTimeseriesData], true, {
+      period: "day",
+      lead: "lead00"
+    }, null, this.requestFactory);
+    let ignitionProbDayLead01 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Predicted Ignition Probability +1 day", [0, 1], [true, true], ignitionProbTimeseriesData, [ignitionProbTimeseriesData], true, {
+      period: "day",
+      lead: "lead01"
+    }, null, this.requestFactory);
+    let ignitionProbDayLead02 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Predicted Ignition Probability +2 days", [0, 1], [true, true], ignitionProbTimeseriesData, [ignitionProbTimeseriesData], true, {
+      period: "day",
+      lead: "lead02"
+    }, null, this.requestFactory);
+    let ignitionProbDayLead03 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Predicted Ignition Probability +3 days", [0, 1], [true, true], ignitionProbTimeseriesData, [ignitionProbTimeseriesData], true, {
+      period: "day",
+      lead: "lead03"
     }, null, this.requestFactory);
 
     ////Datasets
@@ -776,7 +806,10 @@ export class DatasetFormManagerService {
     let ignitionProbVisDataset = new Dataset<VisDatasetItem>(ignitionProbDatasetDisplayData, {
       datatype: "ignition_probability"
     }, ignitionProbFormData, [
-      ignitionProbDay
+      ignitionProbDayLead00,
+      ignitionProbDayLead01,
+      ignitionProbDayLead02,
+      ignitionProbDayLead03
     ]);
 
     let contemporaryRainfallClimatologyVisDataset = new Dataset<VisDatasetItem>(contemporaryRainfallClimatologyDatasetDisplayData, {
@@ -935,6 +968,7 @@ export class DatasetFormManagerService {
     let rhDayStationFileGroup = new FileGroup(new DisplayData("", "", "t"), [stationFile], [statewideProperty, percentUnitsProperty, fillPartialProperty]);
 
     let ignitionProbMapGroup = new FileGroup(new DisplayData("", "", "ae"), [ignitionProbMapFile, metadataFile], [allExtentProperty]);
+    let ignitionProbPredictionMapGroup = new FileGroup(new DisplayData("", "", "af"), [ignitionProbMapFile], [allExtentProperty]);
 
     let contemporaryClimatologyRainfallMonthFileGroup = new FileGroup(new DisplayData("", "", "u"), [contemporaryClimatologyRainfallMapFile], [statewideProperty, monthContemporaryClimatologyProperty]);
     let contemporaryClimatologyRainfallDecadeFileGroup = new FileGroup(new DisplayData("", "", "v"), [contemporaryClimatologyRainfallMapFile], [statewideProperty, decadalClimatologyProperty]);
@@ -988,8 +1022,21 @@ export class DatasetFormManagerService {
       period: "day"
     }, "Daily Relative Humidity", rhTimeseriesData, this.requestFactory);
     //ignition probability
-    let ignitionProbDayExportItem = new ExportDatasetItem([ignitionProbMapGroup], {
-      period: "day"
+    let ignitionProbDayLead00ExportItem = new ExportDatasetItem([ignitionProbMapGroup], {
+      period: "day",
+      lead: "lead00"
+    }, "Daily Ignition Probability", ignitionProbTimeseriesData, this.requestFactory);
+    let ignitionProbDayLead01ExportItem = new ExportDatasetItem([ignitionProbPredictionMapGroup], {
+      period: "day",
+      lead: "lead01"
+    }, "Daily Ignition Probability", ignitionProbTimeseriesData, this.requestFactory);
+    let ignitionProbDayLead02ExportItem = new ExportDatasetItem([ignitionProbPredictionMapGroup], {
+      period: "day",
+      lead: "lead02"
+    }, "Daily Ignition Probability", ignitionProbTimeseriesData, this.requestFactory);
+    let ignitionProbDayLead03ExportItem = new ExportDatasetItem([ignitionProbPredictionMapGroup], {
+      period: "day",
+      lead: "lead03"
     }, "Daily Ignition Probability", ignitionProbTimeseriesData, this.requestFactory);
     ////ds
     //////DS Rainfall
@@ -1178,8 +1225,11 @@ export class DatasetFormManagerService {
     ]);
     let ignitionProbExportDataset = new Dataset<ExportDatasetItem>(ignitionProbDatasetDisplayData, {
       datatype: "ignition_probability"
-    }, periodOnlyFormData, [
-      ignitionProbDayExportItem
+    }, ignitionProbFormData, [
+      ignitionProbDayLead00ExportItem,
+      ignitionProbDayLead01ExportItem,
+      ignitionProbDayLead02ExportItem,
+      ignitionProbDayLead03ExportItem
     ]);
 
     let contemporaryClimatologyRainfallExportDataset = new Dataset<ExportDatasetItem>(contemporaryRainfallClimatologyDatasetDisplayData, {
