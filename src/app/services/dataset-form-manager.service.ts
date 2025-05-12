@@ -340,11 +340,15 @@ export class DatasetFormManagerService {
     let dayPeriod = new PeriodData("day", 1, "day");
     ////focus managers
     let rainfallMonthTimeseriesData = new TimeseriesData(monthPeriod, yearPeriod, this.dateHandler);
-    let temperatureRainfallDayTimeseriesData = new TimeseriesData(dayPeriod, monthPeriod, this.dateHandler);
+    let rainfallDayTimeseriesData = new TimeseriesData(dayPeriod, monthPeriod, this.dateHandler);
     let legacyRainfallTimeseriesData = new TimeseriesData(monthPeriod, yearPeriod, this.dateHandler);
     let temperatureMonthTimeseriesData = new TimeseriesData(monthPeriod, yearPeriod, this.dateHandler);
+    let temperatureDayTimeseriesData = new TimeseriesData(dayPeriod, monthPeriod, this.dateHandler);
     let ndviTimeseriesData = new TimeseriesData(dayPeriod, monthPeriod, this.dateHandler);
-    let ignitionProbTimeseriesData = new TimeseriesData(dayPeriod, monthPeriod, this.dateHandler);
+    let ignitionProbLead00TimeseriesData = new TimeseriesData(dayPeriod, monthPeriod, this.dateHandler);
+    let ignitionProbLead01TimeseriesData = new TimeseriesData(dayPeriod, monthPeriod, this.dateHandler);
+    let ignitionProbLead02TimeseriesData = new TimeseriesData(dayPeriod, monthPeriod, this.dateHandler);
+    let ignitionProbLead03TimeseriesData = new TimeseriesData(dayPeriod, monthPeriod, this.dateHandler);
     let rhTimeseriesData = new TimeseriesData(dayPeriod, monthPeriod, this.dateHandler);
 
 
@@ -352,15 +356,15 @@ export class DatasetFormManagerService {
     //Create Datasets
     ////Dataset Items
     //////Rainfall
-    let rainfallMonthPartial = new VisDatasetItem(true, true, "Millimeters", "mm", "Rainfall", "Monthly Rainfall", [0, 650], [true, false], rainfallMonthTimeseriesData, [rainfallMonthTimeseriesData, temperatureRainfallDayTimeseriesData], false, {
+    let rainfallMonthPartial = new VisDatasetItem(true, true, "Millimeters", "mm", "Rainfall", "Monthly Rainfall", [0, 650], [true, false], rainfallMonthTimeseriesData, [rainfallMonthTimeseriesData, rainfallDayTimeseriesData], false, {
       period: "month",
       fill: "partial"
     }, null, this.requestFactory);
-    let rainfallDayPartial = new VisDatasetItem(true, true, "Millimeters", "mm", "Rainfall", "Daily Rainfall", [0, 20], [true, false], temperatureRainfallDayTimeseriesData, [rainfallMonthTimeseriesData, temperatureRainfallDayTimeseriesData], false, {
+    let rainfallDayPartial = new VisDatasetItem(true, true, "Millimeters", "mm", "Rainfall", "Daily Rainfall", [0, 20], [true, false], rainfallDayTimeseriesData, [rainfallMonthTimeseriesData, rainfallDayTimeseriesData], false, {
       period: "day",
       fill: "partial"
     }, null, this.requestFactory);
-    let rainfallDayUnfilled = new VisDatasetItem(true, true, "Millimeters", "mm", "Rainfall", "Daily Rainfall", [0, 20], [true, false], temperatureRainfallDayTimeseriesData, [rainfallMonthTimeseriesData, temperatureRainfallDayTimeseriesData], false, {
+    let rainfallDayUnfilled = new VisDatasetItem(true, true, "Millimeters", "mm", "Rainfall", "Daily Rainfall", [0, 20], [true, false], rainfallDayTimeseriesData, [rainfallMonthTimeseriesData, rainfallDayTimeseriesData], false, {
       period: "day",
       fill: "unfilled"
     }, null, this.requestFactory);
@@ -369,28 +373,28 @@ export class DatasetFormManagerService {
       period: "month"
     }, null, this.requestFactory);
     //////Min Temperature
-    let minTemperatureMonthPartial = new VisDatasetItem(true, true, "Celcius", "°C", "Minimum Temperature", "Monthly Minimum Temperature", [-10, 35], [false, false], temperatureMonthTimeseriesData, [temperatureMonthTimeseriesData, temperatureRainfallDayTimeseriesData], true, {
+    let minTemperatureMonthPartial = new VisDatasetItem(true, true, "Celcius", "°C", "Minimum Temperature", "Monthly Minimum Temperature", [-10, 35], [false, false], temperatureMonthTimeseriesData, [temperatureMonthTimeseriesData, temperatureDayTimeseriesData], true, {
       period: "month",
       fill: "partial"
     }, null, this.requestFactory);
-    let minTemperatureDayPartial = new VisDatasetItem(true, true, "Celcius", "°C", "Minimum Temperature", "Daily Minimum Temperature", [-10, 35], [false, false], temperatureRainfallDayTimeseriesData, [temperatureMonthTimeseriesData, temperatureRainfallDayTimeseriesData], true, {
+    let minTemperatureDayPartial = new VisDatasetItem(true, true, "Celcius", "°C", "Minimum Temperature", "Daily Minimum Temperature", [-10, 35], [false, false], temperatureDayTimeseriesData, [temperatureMonthTimeseriesData, temperatureDayTimeseriesData], true, {
       period: "day",
       fill: "partial"
     }, null, this.requestFactory);
     //////Max Temperature
-    let maxTemperatureMonthPartial = new VisDatasetItem(true, true, "Celcius", "°C", "Maximum Temperature", "Monthly Maximum Temperature", [-10, 35], [false, false], temperatureMonthTimeseriesData, [temperatureMonthTimeseriesData, temperatureRainfallDayTimeseriesData], true, {
+    let maxTemperatureMonthPartial = new VisDatasetItem(true, true, "Celcius", "°C", "Maximum Temperature", "Monthly Maximum Temperature", [-10, 35], [false, false], temperatureMonthTimeseriesData, [temperatureMonthTimeseriesData, temperatureDayTimeseriesData], true, {
       period: "month",
       fill: "partial"
     }, null, this.requestFactory);
-    let maxTemperatureDayPartial = new VisDatasetItem(true, true, "Celcius", "°C", "Maximum Temperature", "Daily Maximum Temperature", [-10, 35], [false, false], temperatureRainfallDayTimeseriesData, [temperatureMonthTimeseriesData, temperatureRainfallDayTimeseriesData], true, {
+    let maxTemperatureDayPartial = new VisDatasetItem(true, true, "Celcius", "°C", "Maximum Temperature", "Daily Maximum Temperature", [-10, 35], [false, false], temperatureDayTimeseriesData, [temperatureMonthTimeseriesData, temperatureDayTimeseriesData], true, {
       period: "day",
       fill: "partial"
     }, null, this.requestFactory);
     //////Mean Temperature
-    let meanTemperatureMonth = new VisDatasetItem(false, true, "Celcius", "°C", "Mean Temperature", "Monthly Mean Temperature", [-10, 35], [false, false], temperatureMonthTimeseriesData, [temperatureMonthTimeseriesData, temperatureRainfallDayTimeseriesData], true, {
+    let meanTemperatureMonth = new VisDatasetItem(false, true, "Celcius", "°C", "Mean Temperature", "Monthly Mean Temperature", [-10, 35], [false, false], temperatureMonthTimeseriesData, [temperatureMonthTimeseriesData, temperatureDayTimeseriesData], true, {
       period: "month"
     }, null, this.requestFactory);
-    let meanTemperatureDay = new VisDatasetItem(false, true, "Celcius", "°C", "Mean Temperature", "Daily Mean Temperature", [-10, 35], [false, false], temperatureRainfallDayTimeseriesData, [temperatureMonthTimeseriesData, temperatureRainfallDayTimeseriesData], true, {
+    let meanTemperatureDay = new VisDatasetItem(false, true, "Celcius", "°C", "Mean Temperature", "Daily Mean Temperature", [-10, 35], [false, false], temperatureDayTimeseriesData, [temperatureMonthTimeseriesData, temperatureDayTimeseriesData], true, {
       period: "day"
     }, null, this.requestFactory);
 
@@ -713,19 +717,19 @@ export class DatasetFormManagerService {
     }, null, this.requestFactory);
 
     //ignition probability
-    let ignitionProbDayLead00 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Ignition Probability", [0, 1], [true, true], ignitionProbTimeseriesData, [ignitionProbTimeseriesData], true, {
+    let ignitionProbDayLead00 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Ignition Probability", [0, 1], [true, true], ignitionProbLead00TimeseriesData, [ignitionProbLead00TimeseriesData], true, {
       period: "day",
       lead: "lead00"
     }, null, this.requestFactory);
-    let ignitionProbDayLead01 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Predicted Ignition Probability +1 day", [0, 1], [true, true], ignitionProbTimeseriesData, [ignitionProbTimeseriesData], true, {
+    let ignitionProbDayLead01 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Predicted Ignition Probability +1 day", [0, 1], [true, true], ignitionProbLead01TimeseriesData, [ignitionProbLead01TimeseriesData], true, {
       period: "day",
       lead: "lead01"
     }, null, this.requestFactory);
-    let ignitionProbDayLead02 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Predicted Ignition Probability +2 days", [0, 1], [true, true], ignitionProbTimeseriesData, [ignitionProbTimeseriesData], true, {
+    let ignitionProbDayLead02 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Predicted Ignition Probability +2 days", [0, 1], [true, true], ignitionProbLead02TimeseriesData, [ignitionProbLead02TimeseriesData], true, {
       period: "day",
       lead: "lead02"
     }, null, this.requestFactory);
-    let ignitionProbDayLead03 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Predicted Ignition Probability +3 days", [0, 1], [true, true], ignitionProbTimeseriesData, [ignitionProbTimeseriesData], true, {
+    let ignitionProbDayLead03 = new VisDatasetItem(false, true, "", "", "Ignition Probability", "Predicted Ignition Probability +3 days", [0, 1], [true, true], ignitionProbLead03TimeseriesData, [ignitionProbLead03TimeseriesData], true, {
       period: "day",
       lead: "lead03"
     }, null, this.requestFactory);
@@ -991,7 +995,7 @@ export class DatasetFormManagerService {
     }, "Monthly Rainfall", rainfallMonthTimeseriesData, this.requestFactory);
     let rainfallDayExportItem = new ExportDatasetItem([rainfallDayMapFileGroup, rainfallDayStationFileGroup], {
       period: "day"
-    }, "Daily Rainfall", temperatureRainfallDayTimeseriesData, this.requestFactory);
+    }, "Daily Rainfall", rainfallDayTimeseriesData, this.requestFactory);
     ////legacy rainfall
     let legacyRainfallMonthExportItem = new ExportDatasetItem([legacyRainfallFileGroup], {
       period: "month"
@@ -1002,21 +1006,21 @@ export class DatasetFormManagerService {
     }, "Monthly Minimum Temperature", temperatureMonthTimeseriesData, this.requestFactory);
     let minTemperatureDayExportItem = new ExportDatasetItem([temperatureMapFileGroup, temperatureStationFileGroup], {
       period: "day"
-    }, "Daily Minimum Temperature", temperatureRainfallDayTimeseriesData, this.requestFactory);
+    }, "Daily Minimum Temperature", temperatureDayTimeseriesData, this.requestFactory);
     ////max temp
     let maxTemperatureMonthExportItem = new ExportDatasetItem([temperatureMapFileGroup, temperatureStationFileGroup], {
       period: "month"
     }, "Monthly Maximum Temperature", temperatureMonthTimeseriesData, this.requestFactory);
     let maxTemperatureDayExportItem = new ExportDatasetItem([temperatureMapFileGroup, temperatureStationFileGroup], {
       period: "day"
-    }, "Daily Maximum Temperature", temperatureRainfallDayTimeseriesData, this.requestFactory);
+    }, "Daily Maximum Temperature", temperatureDayTimeseriesData, this.requestFactory);
     ////mean temp
     let meanTemperatureMonthExportItem = new ExportDatasetItem([temperatureMapFileGroup], {
       period: "month"
     }, "Monthly Mean Temperature", temperatureMonthTimeseriesData, this.requestFactory);
     let meanTemperatureDayExportItem = new ExportDatasetItem([temperatureMapFileGroup], {
       period: "day"
-    }, "Daily Mean Temperature", temperatureRainfallDayTimeseriesData, this.requestFactory);
+    }, "Daily Mean Temperature", temperatureDayTimeseriesData, this.requestFactory);
     //rh
     let rhDayExportItem = new ExportDatasetItem([rhDayMapFileGroup, rhDayStationFileGroup], {
       period: "day"
@@ -1025,19 +1029,19 @@ export class DatasetFormManagerService {
     let ignitionProbDayLead00ExportItem = new ExportDatasetItem([ignitionProbMapGroup], {
       period: "day",
       lead: "lead00"
-    }, "Daily Ignition Probability", ignitionProbTimeseriesData, this.requestFactory);
+    }, "Daily Ignition Probability", ignitionProbLead00TimeseriesData, this.requestFactory);
     let ignitionProbDayLead01ExportItem = new ExportDatasetItem([ignitionProbPredictionMapGroup], {
       period: "day",
       lead: "lead01"
-    }, "Daily Ignition Probability", ignitionProbTimeseriesData, this.requestFactory);
+    }, "Daily Ignition Probability", ignitionProbLead01TimeseriesData, this.requestFactory);
     let ignitionProbDayLead02ExportItem = new ExportDatasetItem([ignitionProbPredictionMapGroup], {
       period: "day",
       lead: "lead02"
-    }, "Daily Ignition Probability", ignitionProbTimeseriesData, this.requestFactory);
+    }, "Daily Ignition Probability", ignitionProbLead02TimeseriesData, this.requestFactory);
     let ignitionProbDayLead03ExportItem = new ExportDatasetItem([ignitionProbPredictionMapGroup], {
       period: "day",
       lead: "lead03"
-    }, "Daily Ignition Probability", ignitionProbTimeseriesData, this.requestFactory);
+    }, "Daily Ignition Probability", ignitionProbLead03TimeseriesData, this.requestFactory);
     ////ds
     //////DS Rainfall
 
