@@ -57,7 +57,6 @@ export class DataManagerService {
         let end_s: string = date.toISOString();
         date.subtract(500 * timeseriesData.interval, timeseriesData.unit);
         let start_s: string = date.toISOString();
-
         properties.period = timeseriesData.period.tag;
         let timeseriesRes = await exec(start_s, end_s, timeseriesData, location, properties, false);
         this.queries.timeseries.push(timeseriesRes);

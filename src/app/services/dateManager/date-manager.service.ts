@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import Moment from "moment-timezone";
+import moment, { Moment, unitOfTime } from "moment-timezone";
 import { UnitOfTime } from '../dataset-form-manager.service';
 
 @Injectable({
@@ -32,7 +32,9 @@ export class DateManagerService {
     year: "%Y"
   };
 
-  private periodPrecedent = ["second", "minute", "hour", "day", "month", "year"]
+  private periodPrecedent = ["second", "minute", "hour", "day", "month", "year"];
+
+  dataTimezone = "Pacific/Honolulu";
 
   getPeriodOffset(period: UnitOfTime, offset: number) {
     let offsetPeriod = null;
@@ -53,7 +55,7 @@ export class DateManagerService {
     return higherPeriods;
   }
 
-  dateToString(date: Moment.Moment, period: UnitOfTime, fancy: boolean = false): string {
+  dateToString(date: Moment, period: UnitOfTime, fancy: boolean = false): string {
     let format = this.periodToFormat(period, fancy);
     return date.format(format);
   }
@@ -67,7 +69,7 @@ export class DateManagerService {
   }
 
   //inclusive
-  expandDates(start: Moment.Moment, end: Moment.Moment, period: UnitOfTime): Moment.Moment[] {
+  expandDates(start: Moment, end: Moment, period: UnitOfTime): Moment[] {
     let date = start.clone();
     let dates = [];
     while(date.isSameOrBefore(end)) {
@@ -77,7 +79,7 @@ export class DateManagerService {
     return dates;
   }
 
-  datesBetween(start: Moment.Moment, end: Moment.Moment, period: UnitOfTime): number {
+  datesBetween(start: Moment, end: Moment, period: UnitOfTime): number {
     let date = start.clone();
     let num = 0;
     while(date.isSameOrBefore(end)) {
@@ -87,12 +89,16 @@ export class DateManagerService {
     return num;
   }
 
-  getRange(date: Moment.Moment, period: Moment.unitOfTime.StartOf) {
+  getRange(date: Moment, period: unitOfTime.StartOf) {
     let clone = date.clone();
     return [clone.startOf(period).toISOString(), clone.endOf(period).toISOString()];
   }
 
   getPlotlyFormat(period: string) {
     return this.plotlyFormats[period];
+  }
+
+  getDataAlignedMoment(timestamp: string): Moment {
+    return moment(timestamp).tz(this.dataTimezone);
   }
 }

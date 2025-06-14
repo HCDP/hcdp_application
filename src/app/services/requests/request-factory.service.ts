@@ -111,7 +111,7 @@ export class RequestFactoryService {
           values: entries.map((pair: [string, number]) => {
             return {
               value: pair[1],
-              date: moment(pair[0])
+              date: moment(pair[0]).tz("Pacific/Honolulu")
             };
           })
         };
@@ -175,7 +175,7 @@ export class RequestFactoryService {
           values: data.map((item: any) => {
             return {
               value: item.value,
-              date: moment(item.date)
+              date: moment(item.date).tz("Pacific/Honolulu")
             }
           })
         }

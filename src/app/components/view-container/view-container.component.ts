@@ -69,10 +69,6 @@ export class ViewContainerComponent implements OnInit {
   firstElement: HTMLElement;
   dateDebounce: boolean = false;
 
-  temp_start = moment("1990-01-01");
-  temp_end = moment("2022-01-01");
-  temp_period = "month";
-
   enableSmoothScroll: boolean;
 
   constructor(private paramService: EventParamRegistrarService) {

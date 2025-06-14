@@ -191,7 +191,9 @@ export class RainfallGraphComponent implements OnInit {
           }
           return order;
         });
-        let dedupValues = [];
+
+
+        let dedupValues = [values[0]];
         for(let i = 1; i < values.length; i++) {
           if(!values[i].date.isSame(values[i - 1].date)) {
             dedupValues.push(values[i]);

@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { FormatData, Station, StationMetadata } from 'src/app/models/Stations';
+import { Station, StationMetadata } from 'src/app/models/Stations';
 
 @Component({
   selector: 'app-station-filter',
