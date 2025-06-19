@@ -175,8 +175,8 @@ export class RequestFactoryService {
           values: data.map((item: any) => {
             return {
               value: item.value,
-              date: moment(item.date).tz("Pacific/Honolulu")
-            }
+              date: moment(item.date).tz("Pacific/Honolulu", true)
+            };
           })
         }
         return transformed;
